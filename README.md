@@ -312,6 +312,8 @@
 如果这个项目对你有帮助，请给它一个 Star！
 
 [![Star History Chart](https://api.star-history.com/svg?repos=yourusername/sillytavern-character-editor&type=Date)](https://star-history.com/#yourusername/sillytavern-character-editor&Date)
-#   s i l l y t a v e r n - c h a r a c t e r - e d i t o r  
- #   s i l l y t a v e r n - c h a r a c t e r - e d i t o r  
+#   s i l l y t a v e r n - c h a r a c t e r - e d i t o r 
+ 
+ #   s i l l y t a v e r n - c h a r a c t e r - e d i t o r 
+ 
  
