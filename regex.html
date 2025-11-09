@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>正則腳本編輯器 - SillyTavern Regex Scripts</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .regex-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 25px;
+            background: #222222;
+            border-radius: 12px;
+            border: 1px solid #333333;
+        }
+
+        .regex-info h1 {
+            font-size: 2em;
+            color: #ffffff;
+            margin-bottom: 10px;
+        }
+
+        .regex-info p {
+            color: #888;
+            font-size: 14px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #888;
+            text-decoration: none;
+            margin-bottom: 20px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .back-link:hover {
+            color: #fff;
+            background: #2a2a2a;
+        }
+
+        .test-panel {
+            background: #222222;
+            border: 1px solid #333333;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .test-panel h3 {
+            color: #d0d0d0;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+
+        .test-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .test-output {
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            min-height: 100px;
+            color: #e0e0e0;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            background: #1a1a1a;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border: 1px solid #333333;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stat-icon {
+            font-size: 24px;
+        }
+
+        .stat-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 600;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="home.html" class="back-link">
+            ← 返回主頁
+        </a>
+
+        <div class="regex-header">
+            <div class="regex-info">
+                <h1>🔧 正則腳本編輯器</h1>
+                <p>創建和管理 SillyTavern 正則表達式腳本，用於文本替換和格式化</p>
+            </div>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-icon">📝</div>
+                <div class="stat-info">
+                    <div class="stat-label">總腳本</div>
+                    <div class="stat-value" id="totalScripts">0</div>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon">✅</div>
+                <div class="stat-info">
+                    <div class="stat-label">已啟用</div>
+                    <div class="stat-value" id="enabledScripts">0</div>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon">🔄</div>
+                <div class="stat-info">
+                    <div class="stat-label">編輯時運行</div>
+                    <div class="stat-value" id="runOnEditScripts">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-panel">
+            <h3>🧪 測試正則表達式</h3>
+            <div class="form-group">
+                <label>測試文本</label>
+                <textarea id="testInput" rows="4" placeholder="輸入要測試的文本...">Hello World! This is a test.</textarea>
+            </div>
+            <div class="test-row">
+                <div class="form-group">
+                    <label>查找正則 (Find Regex)</label>
+                    <input type="text" id="testFindRegex" placeholder="例如: /hello/gi">
+                </div>
+                <div class="form-group">
+                    <label>替換字符串 (Replace String)</label>
+                    <input type="text" id="testReplaceString" placeholder="例如: Hi">
+                </div>
+            </div>
+            <button class="btn btn-primary" id="testRegexBtn">▶️ 測試</button>
+            <div class="form-group" style="margin-top: 20px;">
+                <label>輸出結果</label>
+                <div class="test-output" id="testOutput">點擊「測試」查看結果...</div>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button class="btn btn-primary" id="addScriptBtn">➕ 新增腳本</button>
+            <button class="btn btn-secondary" id="importJsonBtn">📥 導入 JSON</button>
+            <button class="btn btn-secondary" id="exportJsonBtn">📤 導出 JSON</button>
+            <button class="btn btn-secondary" id="importPngBtn">🖼️ 從 PNG 導入</button>
+            <button class="btn btn-danger" id="clearAllBtn">🗑️ 清空全部</button>
+        </div>
+
+        <div id="scriptsList" class="entries-list" style="margin-top: 30px;">
+            <div class="empty-state">
+                <p style="font-size: 48px; margin-bottom: 15px;">🔧</p>
+                <p style="font-size: 18px; font-weight: 600;">暫無正則腳本</p>
+                <p class="hint">點擊「新增腳本」開始創建文本替換規則</p>
+            </div>
+        </div>
+    </div>
+
+    <input type="file" id="importJsonFile" accept=".json" style="display: none;">
+    <input type="file" id="importPngFile" accept=".png" style="display: none;">
+
+    <script src="regex.js"></script>
+</body>
+</html>

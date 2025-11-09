@@ -1,0 +1,24 @@
+# 操作系统文件
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 编辑器文件
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 临时文件
+*.tmp
+*.bak
+*.log
+
+# 测试文件
+test/
+*.test.html
+
+# 用户数据（不要上传个人数据）
+user-data/
+backups/

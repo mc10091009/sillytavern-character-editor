@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>世界書編輯器 - SillyTavern Lorebook Editor</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .lorebook-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 25px;
+            background: #222222;
+            border-radius: 12px;
+            border: 1px solid #333333;
+        }
+
+        .lorebook-info {
+            flex: 1;
+        }
+
+        .lorebook-info h1 {
+            font-size: 2em;
+            color: #ffffff;
+            margin-bottom: 10px;
+        }
+
+        .lorebook-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .meta-item {
+            background: #1a1a1a;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid #333333;
+        }
+
+        .meta-item label {
+            display: block;
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .meta-item input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 14px;
+            padding: 0;
+        }
+
+        .meta-item input:focus {
+            outline: none;
+        }
+
+        .lorebook-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            background: #1a1a1a;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border: 1px solid #333333;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stat-icon {
+            font-size: 24px;
+        }
+
+        .stat-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #888;
+            text-decoration: none;
+            margin-bottom: 20px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .back-link:hover {
+            color: #fff;
+            background: #2a2a2a;
+        }
+
+        .search-bar {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 14px 16px 14px 45px;
+            background: #1a1a1a;
+            border: 1px solid #3a3a3a;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: #555;
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="home.html" class="back-link">
+            ← 返回主頁
+        </a>
+
+        <div class="lorebook-header">
+            <div class="lorebook-info">
+                <h1>📚 世界書編輯器</h1>
+                <div class="lorebook-meta">
+                    <div class="meta-item">
+                        <label>世界書名稱</label>
+                        <input type="text" id="lorebookName" placeholder="我的世界書">
+                    </div>
+                    <div class="meta-item">
+                        <label>描述</label>
+                        <input type="text" id="lorebookDescription" placeholder="世界設定描述">
+                    </div>
+                    <div class="meta-item">
+                        <label>掃描深度</label>
+                        <input type="number" id="scanDepth" value="100" min="1" max="1000">
+                    </div>
+                    <div class="meta-item">
+                        <label>Token 預算</label>
+                        <input type="number" id="tokenBudget" value="2048" min="1" max="10000">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-icon">📝</div>
+                <div class="stat-info">
+                    <div class="stat-label">總條目</div>
+                    <div class="stat-value" id="totalEntries">0</div>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon">✅</div>
+                <div class="stat-info">
+                    <div class="stat-label">已啟用</div>
+                    <div class="stat-value" id="enabledEntries">0</div>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon">🔍</div>
+                <div class="stat-info">
+                    <div class="stat-label">使用正則</div>
+                    <div class="stat-value" id="regexEntries">0</div>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon">🔤</div>
+                <div class="stat-info">
+                    <div class="stat-label">總關鍵詞</div>
+                    <div class="stat-value" id="totalKeywords">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="search-bar">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" placeholder="搜索條目名稱、關鍵詞或內容...">
+        </div>
+
+        <div class="button-group">
+            <button class="btn btn-primary" id="addEntryBtn">➕ 新增條目</button>
+            <button class="btn btn-secondary" id="importJsonBtn">📥 導入 JSON</button>
+            <button class="btn btn-secondary" id="exportJsonBtn">📤 導出 JSON</button>
+            <button class="btn btn-secondary" id="importPngBtn">🖼️ 從 PNG 導入</button>
+            <button class="btn btn-danger" id="clearAllBtn">🗑️ 清空全部</button>
+        </div>
+
+        <div id="entriesList" class="entries-list" style="margin-top: 30px;">
+            <div class="empty-state">
+                <p style="font-size: 48px; margin-bottom: 15px;">📚</p>
+                <p style="font-size: 18px; font-weight: 600;">暫無世界書條目</p>
+                <p class="hint">點擊「新增條目」開始創建你的世界設定</p>
+            </div>
+        </div>
+    </div>
+
+    <input type="file" id="importJsonFile" accept=".json" style="display: none;">
+    <input type="file" id="importPngFile" accept=".png" style="display: none;">
+
+    <script src="lorebook.js"></script>
+</body>
+</html>

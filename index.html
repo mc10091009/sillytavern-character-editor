@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#1a1a1a">
+    <title>SillyTavern 角色卡编辑器</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <a href="home.html" style="display: inline-flex; align-items: center; gap: 8px; color: #888; text-decoration: none; margin-bottom: 20px; padding: 8px 12px; border-radius: 6px; transition: all 0.2s;">
+            ← 返回主頁
+        </a>
+        <header>
+            <h1>🎭 SillyTavern 角色卡编辑器</h1>
+        </header>
+
+        <div class="main-content">
+            <div class="editor-panel">
+                <h2>角色信息</h2>
+
+                <div class="form-group">
+                    <label for="name">角色名称 *</label>
+                    <input type="text" id="name" placeholder="输入角色名称">
+                </div>
+
+                <div class="form-group">
+                    <label for="description">角色描述</label>
+                    <textarea id="description" rows="4" placeholder="简短描述角色的外观和特征"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="personality">性格特点</label>
+                    <textarea id="personality" rows="4" placeholder="描述角色的性格、行为方式"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="scenario">场景设定</label>
+                    <textarea id="scenario" rows="4" placeholder="角色所处的场景或背景故事"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="first_mes">第一条消息（主要开场白）</label>
+                    <textarea id="first_mes" rows="4" placeholder="角色的开场白"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>备用开场白</label>
+                    <button type="button" class="btn btn-secondary" onclick="addAlternateGreeting()"
+                        style="width: 100%; margin-bottom: 10px;">➕ 添加备用开场白</button>
+                    <div id="alternateGreetingsList" style="display: flex; flex-direction: column; gap: 10px;">
+                        <!-- 备用开场白列表 -->
+                    </div>
+                    <div class="help-text">提供多个不同的开场白选项</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="mes_example">对话示例</label>
+                    <textarea id="mes_example" rows="6"
+                        placeholder="{{user}}: 你好！&#10;{{char}}: 你好呀！很高兴见到你。"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="avatar">角色头像</label>
+                    <input type="file" id="avatar" accept="image/*">
+                    <div id="avatar-preview"></div>
+                </div>
+
+                <div class="form-group">
+                    <button id="worldBookBtn" class="btn btn-secondary" style="width: 100%; margin-bottom: 10px;">📚
+                        编辑世界书</button>
+                </div>
+
+                <div class="form-group">
+                    <button id="advancedBtn" class="btn btn-secondary" style="width: 100%; margin-bottom: 10px;">⚙️
+                        高级设置</button>
+                </div>
+
+                <div class="form-group">
+                    <button onclick="openRegexEditor()" class="btn btn-secondary"
+                        style="width: 100%; margin-bottom: 10px;">🔧 正则表达式工具</button>
+                </div>
+
+                <div class="form-group">
+                    <button id="regexScriptsBtn" class="btn btn-secondary" style="width: 100%; margin-bottom: 10px;">📜
+                        正则脚本管理</button>
+                </div>
+
+                <div class="button-group">
+                    <button id="saveLocalBtn" class="btn btn-secondary" style="width: 100%; margin-bottom: 10px;">💾
+                        保存到浏览器</button>
+                    <button id="loadLocalBtn" class="btn btn-secondary" style="width: 100%; margin-bottom: 10px;">📂
+                        从浏览器加载</button>
+                </div>
+
+                <div class="button-group">
+                    <button id="exportBtn" class="btn btn-primary">📥 导出 PNG</button>
+                    <button id="exportJsonBtn" class="btn btn-primary">📥 导出 JSON</button>
+                </div>
+                <div class="button-group">
+                    <button id="importBtn" class="btn btn-secondary">📤 导入角色卡</button>
+                    <button id="clearBtn" class="btn btn-danger">🗑️ 清空</button>
+                </div>
+                <input type="file" id="importFile" accept=".png" style="display: none;">
+            </div>
+
+            <div class="preview-panel">
+                <h2>预览</h2>
+                <div class="character-card">
+                    <div class="card-avatar" id="previewAvatar">
+                        <span class="placeholder-text">暂无头像</span>
+                    </div>
+                    <div class="card-info">
+                        <h3 id="previewName">角色名称</h3>
+                        <div class="info-section">
+                            <strong>描述：</strong>
+                            <p id="previewDescription">暂无描述</p>
+                        </div>
+                        <div class="info-section">
+                            <strong>性格：</strong>
+                            <p id="previewPersonality">暂无性格描述</p>
+                        </div>
+                        <div class="info-section">
+                            <strong>场景：</strong>
+                            <p id="previewScenario">暂无场景设定</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 世界书编辑器模态框 -->
+    <div id="worldBookModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📚 世界书编辑器</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="worldbook-controls">
+                    <button id="addEntryBtn" class="btn btn-primary">➕ 添加条目</button>
+                    <div class="worldbook-info">
+                        <span>共 <strong id="entryCount">0</strong> 个条目</span>
+                    </div>
+                </div>
+
+                <div id="entriesList" class="entries-list">
+                    <div class="empty-state">
+                        <p>暂无世界书条目</p>
+                        <p class="hint">世界书用于存储角色背景、世界观设定等信息，当对话中出现关键词时会自动触发</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="closeModalBtn" class="btn btn-secondary">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 正则脚本管理模态框 -->
+    <div id="regexScriptsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📜 正则表达式脚本</h2>
+                <span class="close close-regex-scripts">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="worldbook-controls">
+                    <button id="addRegexScriptBtn" class="btn btn-primary">➕ 添加脚本</button>
+                    <div class="worldbook-info">
+                        <span>共 <strong id="regexScriptCount">0</strong> 个脚本</span>
+                    </div>
+                </div>
+
+                <div
+                    style="margin-bottom: 20px; padding: 15px; background: #e3f2fd; border-radius: 8px; font-size: 14px;">
+                    <strong>💡 什么是正则脚本？</strong><br>
+                    正则脚本可以在发送给 AI 之前自动查找和替换文本内容。<br>
+                    例如：隐藏状态栏、替换特定标记、格式化文本等。
+                </div>
+
+                <div id="regexScriptsList" class="entries-list">
+                    <div class="empty-state">
+                        <p>暂无正则脚本</p>
+                        <p class="hint">正则脚本用于在发送给 AI 之前对文本进行查找和替换</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary close-regex-scripts">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 正则表达式编辑器模态框 -->
+    <div id="regexEditorModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2>🔧 正则表达式编辑器</h2>
+                <span class="close close-regex">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>
+                        正则表达式 (Regex)
+                        <button class="btn-small" onclick="showRegexHelp()"
+                            style="margin-left: 10px; padding: 4px 10px;">❓ 帮助</button>
+                    </label>
+                    <input type="text" id="regexPattern" placeholder="例如：\b(魔法|法术)\b"
+                        style="font-family: 'Courier New', monospace;">
+                    <div class="help-text">输入正则表达式模式来匹配文本</div>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="regexCaseSensitive">
+                        区分大小写 (Case Sensitive)
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label>测试文本</label>
+                    <textarea id="regexTestText" rows="4" placeholder="输入测试文本，看看正则表达式是否匹配..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <button class="btn btn-primary" onclick="testRegex()">🧪 测试匹配</button>
+                </div>
+
+                <div id="regexResult" style="display: none; margin-top: 20px;">
+                    <div style="padding: 15px; border-radius: 8px; background: #f0f0f0;">
+                        <strong>测试结果：</strong>
+                        <div id="regexResultText" style="margin-top: 10px;"></div>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #e0e0e0;">
+                    <label>常用正则表达式示例</label>
+                    <div style="display: grid; gap: 10px; margin-top: 10px;">
+                        <button class="btn-small" onclick="insertRegexExample('\\b{{char}}\\b')"
+                            style="text-align: left; padding: 10px;">
+                            <strong>\b{{char}}\b</strong> - 匹配角色名称（单词边界）
+                        </button>
+                        <button class="btn-small" onclick="insertRegexExample('\\b(魔法|法术|咒语)\\b')"
+                            style="text-align: left; padding: 10px;">
+                            <strong>\b(魔法|法术|咒语)\b</strong> - 匹配多个关键词之一
+                        </button>
+                        <button class="btn-small" onclick="insertRegexExample('^你好')"
+                            style="text-align: left; padding: 10px;">
+                            <strong>^你好</strong> - 匹配以"你好"开头的文本
+                        </button>
+                        <button class="btn-small" onclick="insertRegexExample('再见$')"
+                            style="text-align: left; padding: 10px;">
+                            <strong>再见$</strong> - 匹配以"再见"结尾的文本
+                        </button>
+                        <button class="btn-small" onclick="insertRegexExample('\\d+')"
+                            style="text-align: left; padding: 10px;">
+                            <strong>\d+</strong> - 匹配一个或多个数字
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary close-regex">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 高级设置模态框 -->
+    <div id="advancedModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⚙️ 高级设置</h2>
+                <span class="close close-advanced">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="creator">创建者</label>
+                    <input type="text" id="creator" placeholder="角色卡创建者名称">
+                    <div class="help-text">可选：标注角色卡的创建者</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="character_version">角色版本</label>
+                    <input type="text" id="character_version" placeholder="例如：1.0, v2.5">
+                    <div class="help-text">可选：角色卡的版本号</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="tags">标签</label>
+                    <input type="text" id="tags" placeholder="用逗号分隔，例如：奇幻, 女性, 魔法师">
+                    <div class="help-text">用于分类和搜索角色</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="creator_notes">创建者备注</label>
+                    <textarea id="creator_notes" rows="3" placeholder="给其他用户的备注说明，例如使用建议、角色背景等"></textarea>
+                    <div class="help-text">对角色卡的额外说明</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="system_prompt">系统提示词</label>
+                    <textarea id="system_prompt" rows="4" placeholder="自定义系统提示词，会在对话开始时发送给 AI"></textarea>
+                    <div class="help-text">高级功能：自定义 AI 的行为方式</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="post_history_instructions">历史后指令</label>
+                    <textarea id="post_history_instructions" rows="3" placeholder="在对话历史之后插入的指令"></textarea>
+                    <div class="help-text">高级功能：在每次回复前插入的额外指令</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="alternate_greetings">备用开场白</label>
+                    <textarea id="alternate_greetings" rows="6"
+                        placeholder="输入多个备用开场白，用 --- 分隔&#10;例如：&#10;你好！今天天气真好。&#10;---&#10;嗨！很高兴见到你！"></textarea>
+                    <div class="help-text">提供多个不同的开场白选项，用 --- 分隔</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="closeAdvancedBtn" class="btn btn-secondary">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
