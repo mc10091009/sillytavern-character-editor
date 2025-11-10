@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -60,6 +61,7 @@
             font-size: 64px;
             margin-bottom: 20px;
             display: block;
+            pointer-events: none;
         }
 
         .tool-card h2 {
@@ -67,12 +69,14 @@
             font-size: 1.8em;
             margin-bottom: 15px;
             font-weight: 600;
+            pointer-events: none;
         }
 
         .tool-card p {
             color: #999;
             line-height: 1.7;
             font-size: 15px;
+            pointer-events: none;
         }
 
         .tool-badge {
@@ -84,6 +88,7 @@
             color: #888;
             margin-top: 15px;
             border: 1px solid #333;
+            pointer-events: none;
         }
 
         .footer {
@@ -106,6 +111,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="hero">
@@ -114,7 +120,7 @@
         </div>
 
         <div class="tools-grid">
-            <a href="index.html" class="tool-card">
+            <a href="character-editor.html" class="tool-card">
                 <span class="tool-icon">🎭</span>
                 <h2>角色卡編輯器</h2>
                 <p>創建和編輯 SillyTavern 角色卡，支持 V1/V2/V3 格式，包含完整的角色信息、世界書和正則腳本</p>
@@ -155,11 +161,12 @@
         <div class="footer">
             <p>開源項目 · 使用 Cooperative Non-Commercial License (Co-op NCL) 授權</p>
             <p style="margin-top: 10px;">
-                <a href="README.md">使用說明</a> · 
-                <a href="CONTRIBUTING.md">貢獻指南</a> · 
+                <a href="README.md">使用說明</a> ·
+                <a href="CONTRIBUTING.md">貢獻指南</a> ·
                 <a href="LICENSE">授權條款</a>
             </p>
         </div>
     </div>
 </body>
+
 </html>
