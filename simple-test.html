@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>簡單測試</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 簡單按鈕測試</h1>
+        
+        <div style="margin: 20px 0; padding: 20px; background: #2a2a2a; border-radius: 8px;">
+            <h2>測試 1: 內聯事件處理</h2>
+            <button onclick="alert('內聯事件正常工作！')" class="btn btn-primary">
+                點擊測試（內聯）
+            </button>
+        </div>
+        
+        <div style="margin: 20px 0; padding: 20px; background: #2a2a2a; border-radius: 8px;">
+            <h2>測試 2: JavaScript 事件監聽器</h2>
+            <button id="testBtn" class="btn btn-primary">
+                點擊測試（事件監聽器）
+            </button>
+            <div id="result" style="margin-top: 10px; padding: 10px; background: #333; border-radius: 4px; display: none;"></div>
+        </div>
+        
+        <div style="margin: 20px 0; padding: 20px; background: #2a2a2a; border-radius: 8px;">
+            <h2>測試 3: 原始按鈕（來自 character-editor.html）</h2>
+            <button id="exportBtn" class="btn btn-primary">📥 導出 PNG</button>
+            <button id="exportJsonBtn" class="btn btn-primary">📥 導出 JSON</button>
+        </div>
+        
+        <div style="margin: 20px 0; padding: 20px; background: #2a2a2a; border-radius: 8px;">
+            <h2>控制台輸出</h2>
+            <p>按 F12 打開開發者工具查看控制台輸出</p>
+            <div id="console-output" style="background: #1a1a1a; padding: 15px; border-radius: 4px; font-family: monospace; font-size: 12px; max-height: 300px; overflow-y: auto;"></div>
+        </div>
+    </div>
+    
+    <script>
+        // 自定義控制台輸出到頁面
+        const consoleOutput = document.getElementById('console-output');
+        const originalLog = console.log;
+        const originalError = console.error;
+        
+        function addToConsole(message, type = 'log') {
+            const color = type === 'error' ? '#f44336' : '#4CAF50';
+            const prefix = type === 'error' ? '✗' : '✓';
+            consoleOutput.innerHTML += `<div style="color: ${color}; margin: 5px 0;">${prefix} ${message}</div>`;
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addToConsole(args.join(' '), 'log');
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addToConsole(args.join(' '), 'error');
+        };
+        
+        // 開始測試
+        console.log('=== 頁面加載開始 ===');
+        console.log('當前時間: ' + new Date().toLocaleString());
+        
+        // 測試 2: 事件監聽器
+        const testBtn = document.getElementById('testBtn');
+        const result = document.getElementById('result');
+        
+        if (testBtn) {
+            console.log('✓ testBtn 元素找到');
+            testBtn.addEventListener('click', function() {
+                console.log('✓ testBtn 點擊事件觸發');
+                result.style.display = 'block';
+                result.innerHTML = '<span style="color: #4CAF50;">✓ 事件監聽器正常工作！</span>';
+            });
+            console.log('✓ testBtn 事件監聽器已添加');
+        } else {
+            console.error('✗ testBtn 元素未找到');
+        }
+        
+        // 測試 3: 原始按鈕
+        const exportBtn = document.getElementById('exportBtn');
+        const exportJsonBtn = document.getElementById('exportJsonBtn');
+        
+        if (exportBtn) {
+            console.log('✓ exportBtn 元素找到');
+            exportBtn.addEventListener('click', function() {
+                console.log('✓ exportBtn 點擊事件觸發');
+                alert('✓ exportBtn 正常工作！');
+            });
+            console.log('✓ exportBtn 事件監聽器已添加');
+        } else {
+            console.error('✗ exportBtn 元素未找到');
+        }
+        
+        if (exportJsonBtn) {
+            console.log('✓ exportJsonBtn 元素找到');
+            exportJsonBtn.addEventListener('click', function() {
+                console.log('✓ exportJsonBtn 點擊事件觸發');
+                alert('✓ exportJsonBtn 正常工作！');
+            });
+            console.log('✓ exportJsonBtn 事件監聽器已添加');
+        } else {
+            console.error('✗ exportJsonBtn 元素未找到');
+        }
+        
+        console.log('=== 初始化完成 ===');
+        console.log('如果按鈕沒有反應，請檢查上面的錯誤信息');
+    </script>
+</body>
+</html>

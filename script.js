@@ -1,3 +1,8 @@
+// 調試信息
+console.log('=== script.js 開始執行 ===');
+console.log('當前時間:', new Date().toLocaleString());
+console.log('DOM 狀態:', document.readyState);
+
 // 角色数据
 let characterData = {
     name: '',
@@ -71,6 +76,22 @@ const worldBookBtn = document.getElementById('worldBookBtn');
 const advancedBtn = document.getElementById('advancedBtn');
 const saveLocalBtn = document.getElementById('saveLocalBtn');
 const loadLocalBtn = document.getElementById('loadLocalBtn');
+
+// 調試：檢查主要按鈕元素
+console.log('=== 主要按鈕元素檢查 ===');
+console.log('exportBtn:', exportBtn ? '✓ 找到' : '✗ 未找到');
+console.log('exportJsonBtn:', exportJsonBtn ? '✓ 找到' : '✗ 未找到');
+console.log('importBtn:', importBtn ? '✓ 找到' : '✗ 未找到');
+console.log('clearBtn:', clearBtn ? '✓ 找到' : '✗ 未找到');
+console.log('worldBookBtn:', worldBookBtn ? '✓ 找到' : '✗ 未找到');
+console.log('advancedBtn:', advancedBtn ? '✓ 找到' : '✗ 未找到');
+console.log('saveLocalBtn:', saveLocalBtn ? '✓ 找到' : '✗ 未找到');
+console.log('loadLocalBtn:', loadLocalBtn ? '✓ 找到' : '✗ 未找到');
+
+if (!exportBtn || !exportJsonBtn || !importBtn || !clearBtn) {
+    console.error('⚠️ 警告：某些主要按鈕元素未找到！');
+    console.error('這可能導致按鈕無法點擊。請檢查 HTML 中的元素 ID 是否正確。');
+}
 
 // 高级设置相关元素
 const advancedModal = document.getElementById('advancedModal');
@@ -207,7 +228,9 @@ avatarInput.addEventListener('change', (e) => {
 });
 
 // 导出为 PNG (SillyTavern 格式)
+console.log('=== 添加 exportBtn 事件監聽器 ===');
 exportBtn.addEventListener('click', async () => {
+    console.log('✓ exportBtn 被點擊！');
     if (!characterData.name) {
         alert('请至少填写角色名称！');
         return;
@@ -344,7 +367,9 @@ exportBtn.addEventListener('click', async () => {
 });
 
 // 导出为 JSON
+console.log('=== 添加 exportJsonBtn 事件監聽器 ===');
 exportJsonBtn.addEventListener('click', () => {
+    console.log('✓ exportJsonBtn 被點擊！');
     if (!characterData.name) {
         alert('请至少填写角色名称！');
         return;
@@ -2036,3 +2061,10 @@ startAutoSave();
 // 初始化预览和备用开场白
 updatePreview();
 renderAlternateGreetings();
+
+console.log('=== script.js 執行完成 ===');
+console.log('如果按鈕沒有反應，請檢查上面的錯誤信息');
+console.log('你可以在控制台輸入以下命令測試：');
+console.log('  characterData - 查看角色數據');
+console.log('  exportBtn - 查看導出按鈕元素');
+console.log('  exportBtn.click() - 手動觸發點擊');

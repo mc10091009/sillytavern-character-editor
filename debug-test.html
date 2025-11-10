@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>按鈕測試</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #2a2a2a;
+            border-radius: 8px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            background: #333;
+            border-radius: 4px;
+        }
+        .success {
+            color: #4CAF50;
+        }
+        .error {
+            color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 按鈕功能測試</h1>
+    
+    <div class="test-section">
+        <h2>測試 1: 基本按鈕點擊</h2>
+        <button onclick="test1()">點擊測試</button>
+        <div id="test1-result" class="status"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>測試 2: 檢查 script.js 是否加載</h2>
+        <button onclick="test2()">檢查 script.js</button>
+        <div id="test2-result" class="status"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>測試 3: 檢查所有按鈕元素</h2>
+        <button onclick="test3()">檢查按鈕元素</button>
+        <div id="test3-result" class="status"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>測試 4: 打開 character-editor.html</h2>
+        <a href="character-editor.html" style="display: inline-block; padding: 10px 20px; background: #667eea; color: white; text-decoration: none; border-radius: 6px;">
+            打開角色編輯器
+        </a>
+    </div>
+
+    <div class="test-section">
+        <h2>調試建議</h2>
+        <ol style="line-height: 1.8;">
+            <li>打開 character-editor.html</li>
+            <li>按 F12 打開開發者工具</li>
+            <li>查看 Console 標籤是否有錯誤信息</li>
+            <li>在 Console 中輸入: <code style="background: #333; padding: 2px 6px; border-radius: 3px;">typeof characterData</code></li>
+            <li>檢查是否返回 "object"（如果是 "undefined" 說明 script.js 沒有加載）</li>
+        </ol>
+    </div>
+
+    <script>
+        function test1() {
+            const result = document.getElementById('test1-result');
+            result.innerHTML = '<span class="success">✓ 按鈕點擊正常工作！</span>';
+            console.log('測試 1 通過');
+        }
+
+        function test2() {
+            const result = document.getElementById('test2-result');
+            
+            // 檢查是否可以訪問 character-editor.html 中的變量
+            fetch('script.js')
+                .then(response => {
+                    if (response.ok) {
+                        result.innerHTML = '<span class="success">✓ script.js 文件存在且可訪問</span>';
+                        console.log('script.js 狀態:', response.status);
+                    } else {
+                        result.innerHTML = '<span class="error">✗ script.js 無法訪問 (狀態: ' + response.status + ')</span>';
+                    }
+                })
+                .catch(error => {
+                    result.innerHTML = '<span class="error">✗ 錯誤: ' + error.message + '</span>';
+                });
+        }
+
+        function test3() {
+            const result = document.getElementById('test3-result');
+            
+            // 模擬檢查 character-editor.html 中的按鈕
+            const buttonIds = [
+                'exportBtn',
+                'exportJsonBtn',
+                'importBtn',
+                'clearBtn',
+                'worldBookBtn',
+                'advancedBtn',
+                'saveLocalBtn',
+                'loadLocalBtn',
+                'regexScriptsBtn'
+            ];
+
+            let html = '<div style="font-family: monospace; font-size: 12px;">';
+            html += '<p>在 character-editor.html 中應該存在以下按鈕 ID:</p>';
+            html += '<ul style="list-style: none; padding: 0;">';
+            
+            buttonIds.forEach(id => {
+                html += `<li>• ${id}</li>`;
+            });
+            
+            html += '</ul>';
+            html += '<p style="margin-top: 15px; color: #ffa726;">請在 character-editor.html 中按 F12，然後在 Console 輸入:</p>';
+            html += '<code style="display: block; background: #333; padding: 10px; border-radius: 4px; margin-top: 5px;">';
+            html += 'document.getElementById("exportBtn")';
+            html += '</code>';
+            html += '<p style="margin-top: 10px;">如果返回 null，說明元素不存在或 ID 不匹配</p>';
+            html += '</div>';
+            
+            result.innerHTML = html;
+        }
+
+        // 頁面加載時自動運行基本檢查
+        window.addEventListener('load', () => {
+            console.log('=== 調試測試頁面已加載 ===');
+            console.log('當前 URL:', window.location.href);
+            console.log('請點擊上面的測試按鈕進行診斷');
+        });
+    </script>
+</body>
+</html>
