@@ -331,11 +331,33 @@
     </div>
 
     <script>
-        // 確保 DOM 完全加載後再執行 script.js
+        // 確保 DOM 完全加載後再執行
+        console.log('=== character-editor.html 初始化 ===');
         console.log('DOM 加載狀態:', document.readyState);
-        if (document.readyState === 'loading') {
-            console.log('等待 DOM 加載...');
-        }
+        console.log('當前 URL:', window.location.href);
+        
+        // 檢查關鍵元素是否存在
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log('DOMContentLoaded 事件觸發');
+            const criticalElements = [
+                'name', 'exportBtn', 'exportJsonBtn', 'importBtn', 
+                'worldBookBtn', 'advancedBtn', 'previewName'
+            ];
+            
+            criticalElements.forEach(id => {
+                const element = document.getElementById(id);
+                console.log(`元素 #${id}:`, element ? '✓ 存在' : '✗ 不存在');
+            });
+        });
+        
+        // 捕獲全局錯誤
+        window.addEventListener('error', function(e) {
+            console.error('全局錯誤:', e.message, e.filename, e.lineno, e.colno);
+        });
+        
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error('未處理的 Promise 拒絕:', e.reason);
+        });
     </script>
     <script src="script.js"></script>
 </body>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>連結測試頁面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        h1 {
+            color: #4CAF50;
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #222;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        a {
+            display: block;
+            margin: 10px 0;
+            padding: 15px;
+            background: #333;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        a:hover {
+            background: #444;
+            transform: translateX(5px);
+        }
+        .info {
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-size: 14px;
+            color: #aaa;
+        }
+        .success {
+            color: #4CAF50;
+        }
+        .error {
+            color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Zeabur 部署測試頁面</h1>
+    
+    <div class="test-section">
+        <h2>環境信息</h2>
+        <div class="info">
+            <strong>當前 URL:</strong> <span id="currentUrl"></span><br>
+            <strong>User Agent:</strong> <span id="userAgent"></span><br>
+            <strong>時間:</strong> <span id="currentTime"></span>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>文件連結測試</h2>
+        <p>點擊下面的連結測試是否能正常訪問各個頁面：</p>
+        
+        <a href="index.html">🏠 首頁 (index.html)</a>
+        <a href="character-editor.html">🎭 角色卡編輯器 (character-editor.html)</a>
+        <a href="lorebook.html">📚 世界書編輯器 (lorebook.html)</a>
+        <a href="regex.html">🔧 正則腳本編輯器 (regex.html)</a>
+        <a href="test-png.html">🔍 PNG 測試工具 (test-png.html)</a>
+        <a href="compare-format.html">⚖️ 格式對比工具 (compare-format.html)</a>
+    </div>
+
+    <div class="test-section">
+        <h2>資源檢查</h2>
+        <div id="resourceCheck"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>JavaScript 測試</h2>
+        <div id="jsTest"></div>
+    </div>
+
+    <script>
+        // 顯示環境信息
+        document.getElementById('currentUrl').textContent = window.location.href;
+        document.getElementById('userAgent').textContent = navigator.userAgent;
+        document.getElementById('currentTime').textContent = new Date().toLocaleString('zh-CN');
+
+        // 檢查資源
+        const resourceCheck = document.getElementById('resourceCheck');
+        const resources = [
+            { name: 'style.css', url: 'style.css' },
+            { name: 'script.js', url: 'script.js' },
+            { name: 'lorebook.js', url: 'lorebook.js' },
+            { name: 'regex.js', url: 'regex.js' }
+        ];
+
+        let checkHtml = '<p>正在檢查資源文件...</p>';
+        resourceCheck.innerHTML = checkHtml;
+
+        Promise.all(resources.map(resource => 
+            fetch(resource.url)
+                .then(response => ({
+                    name: resource.name,
+                    status: response.status,
+                    ok: response.ok
+                }))
+                .catch(error => ({
+                    name: resource.name,
+                    status: 'ERROR',
+                    ok: false,
+                    error: error.message
+                }))
+        )).then(results => {
+            checkHtml = '<ul style="list-style: none; padding: 0;">';
+            results.forEach(result => {
+                const icon = result.ok ? '✓' : '✗';
+                const className = result.ok ? 'success' : 'error';
+                checkHtml += `<li class="${className}">${icon} ${result.name}: ${result.status}</li>`;
+            });
+            checkHtml += '</ul>';
+            resourceCheck.innerHTML = checkHtml;
+        });
+
+        // JavaScript 測試
+        const jsTest = document.getElementById('jsTest');
+        try {
+            // 測試 localStorage
+            localStorage.setItem('test', 'ok');
+            const localStorageWorks = localStorage.getItem('test') === 'ok';
+            localStorage.removeItem('test');
+
+            // 測試 console
+            const consoleWorks = typeof console !== 'undefined' && typeof console.log === 'function';
+
+            jsTest.innerHTML = `
+                <ul style="list-style: none; padding: 0;">
+                    <li class="${localStorageWorks ? 'success' : 'error'}">
+                        ${localStorageWorks ? '✓' : '✗'} localStorage 可用
+                    </li>
+                    <li class="${consoleWorks ? 'success' : 'error'}">
+                        ${consoleWorks ? '✓' : '✗'} console 可用
+                    </li>
+                    <li class="success">✓ JavaScript 正常運行</li>
+                </ul>
+            `;
+        } catch (error) {
+            jsTest.innerHTML = `<p class="error">✗ JavaScript 錯誤: ${error.message}</p>`;
+        }
+
+        // 記錄到控制台
+        console.log('=== Zeabur 部署測試 ===');
+        console.log('URL:', window.location.href);
+        console.log('時間:', new Date().toISOString());
+        console.log('User Agent:', navigator.userAgent);
+    </script>
+</body>
+</html>
