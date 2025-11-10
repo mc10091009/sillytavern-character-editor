@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>診斷工具 - Character Editor</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0d1117;
+            color: #c9d1d9;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #58a6ff;
+            margin-bottom: 30px;
+            font-size: 32px;
+        }
+        .section {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            color: #58a6ff;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        .status {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin: 5px 0;
+            background: #0d1117;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        .status-icon {
+            margin-right: 10px;
+            font-size: 18px;
+        }
+        .success { border-left: 3px solid #3fb950; }
+        .error { border-left: 3px solid #f85149; }
+        .warning { border-left: 3px solid #d29922; }
+        .info { border-left: 3px solid #58a6ff; }
+        pre {
+            background: #0d1117;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 12px;
+            border: 1px solid #30363d;
+        }
+        .btn {
+            background: #238636;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+            transition: background 0.2s;
+        }
+        .btn:hover {
+            background: #2ea043;
+        }
+        .btn-secondary {
+            background: #21262d;
+            border: 1px solid #30363d;
+        }
+        .btn-secondary:hover {
+            background: #30363d;
+        }
+        #console-output {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .console-line {
+            padding: 5px;
+            border-bottom: 1px solid #21262d;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        .console-error { color: #f85149; }
+        .console-warn { color: #d29922; }
+        .console-info { color: #58a6ff; }
+        .console-log { color: #8b949e; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Character Editor 診斷工具</h1>
+        
+        <div class="section">
+            <h2>📋 環境信息</h2>
+            <div class="status info">
+                <span class="status-icon">🌐</span>
+                <span>URL: <strong id="url"></strong></span>
+            </div>
+            <div class="status info">
+                <span class="status-icon">🖥️</span>
+                <span>User Agent: <strong id="ua"></strong></span>
+            </div>
+            <div class="status info">
+                <span class="status-icon">⏰</span>
+                <span>時間: <strong id="time"></strong></span>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📦 文件加載狀態</h2>
+            <div id="file-status"></div>
+        </div>
+
+        <div class="section">
+            <h2>🔧 JavaScript 功能測試</h2>
+            <div id="js-status"></div>
+        </div>
+
+        <div class="section">
+            <h2>🎯 DOM 元素檢查</h2>
+            <div id="dom-status"></div>
+        </div>
+
+        <div class="section">
+            <h2>📜 控制台輸出</h2>
+            <div id="console-output"></div>
+        </div>
+
+        <div class="section">
+            <button class="btn" onclick="location.reload()">🔄 重新檢測</button>
+            <button class="btn btn-secondary" onclick="window.location.href='character-editor.html'">➡️ 前往編輯器</button>
+            <button class="btn btn-secondary" onclick="window.location.href='index.html'">🏠 返回首頁</button>
+        </div>
+    </div>
+
+    <script>
+        // 捕獲控制台輸出
+        const consoleOutput = document.getElementById('console-output');
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        const originalInfo = console.info;
+
+        function addConsoleLine(message, type = 'log') {
+            const line = document.createElement('div');
+            line.className = `console-line console-${type}`;
+            line.textContent = `[${type.toUpperCase()}] ${message}`;
+            consoleOutput.appendChild(line);
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addConsoleLine(args.join(' '), 'log');
+        };
+
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addConsoleLine(args.join(' '), 'error');
+        };
+
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            addConsoleLine(args.join(' '), 'warn');
+        };
+
+        console.info = function(...args) {
+            originalInfo.apply(console, args);
+            addConsoleLine(args.join(' '), 'info');
+        };
+
+        // 捕獲錯誤
+        window.addEventListener('error', function(e) {
+            console.error(`錯誤: ${e.message} (${e.filename}:${e.lineno}:${e.colno})`);
+        });
+
+        // 顯示環境信息
+        document.getElementById('url').textContent = window.location.href;
+        document.getElementById('ua').textContent = navigator.userAgent;
+        document.getElementById('time').textContent = new Date().toLocaleString('zh-CN');
+
+        // 測試文件加載
+        async function testFiles() {
+            const files = [
+                'style.css',
+                'script.js',
+                'character-editor.html'
+            ];
+
+            const fileStatus = document.getElementById('file-status');
+            
+            for (const file of files) {
+                try {
+                    const response = await fetch(file);
+                    const status = response.ok ? 'success' : 'error';
+                    const icon = response.ok ? '✅' : '❌';
+                    
+                    fileStatus.innerHTML += `
+                        <div class="status ${status}">
+                            <span class="status-icon">${icon}</span>
+                            <span>${file}: ${response.status} ${response.statusText}</span>
+                        </div>
+                    `;
+                } catch (error) {
+                    fileStatus.innerHTML += `
+                        <div class="status error">
+                            <span class="status-icon">❌</span>
+                            <span>${file}: 加載失敗 - ${error.message}</span>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        // 測試 JavaScript 功能
+        function testJavaScript() {
+            const jsStatus = document.getElementById('js-status');
+            const tests = [
+                {
+                    name: 'localStorage',
+                    test: () => {
+                        localStorage.setItem('test', 'ok');
+                        const result = localStorage.getItem('test') === 'ok';
+                        localStorage.removeItem('test');
+                        return result;
+                    }
+                },
+                {
+                    name: 'Canvas API',
+                    test: () => {
+                        const canvas = document.createElement('canvas');
+                        return !!(canvas.getContext && canvas.getContext('2d'));
+                    }
+                },
+                {
+                    name: 'FileReader API',
+                    test: () => typeof FileReader !== 'undefined'
+                },
+                {
+                    name: 'Fetch API',
+                    test: () => typeof fetch !== 'undefined'
+                },
+                {
+                    name: 'TextEncoder',
+                    test: () => typeof TextEncoder !== 'undefined'
+                }
+            ];
+
+            tests.forEach(({ name, test }) => {
+                try {
+                    const result = test();
+                    const status = result ? 'success' : 'error';
+                    const icon = result ? '✅' : '❌';
+                    
+                    jsStatus.innerHTML += `
+                        <div class="status ${status}">
+                            <span class="status-icon">${icon}</span>
+                            <span>${name}: ${result ? '可用' : '不可用'}</span>
+                        </div>
+                    `;
+                } catch (error) {
+                    jsStatus.innerHTML += `
+                        <div class="status error">
+                            <span class="status-icon">❌</span>
+                            <span>${name}: 錯誤 - ${error.message}</span>
+                        </div>
+                    `;
+                }
+            });
+        }
+
+        // 加載 script.js 並檢查 DOM 元素
+        function loadScriptAndCheckDOM() {
+            const script = document.createElement('script');
+            script.src = 'script.js?t=' + Date.now();
+            
+            script.onerror = function() {
+                document.getElementById('dom-status').innerHTML = `
+                    <div class="status error">
+                        <span class="status-icon">❌</span>
+                        <span>script.js 加載失敗</span>
+                    </div>
+                `;
+            };
+            
+            script.onload = function() {
+                setTimeout(() => {
+                    const domStatus = document.getElementById('dom-status');
+                    
+                    // 檢查全局變量
+                    if (typeof characterData !== 'undefined') {
+                        domStatus.innerHTML += `
+                            <div class="status success">
+                                <span class="status-icon">✅</span>
+                                <span>characterData 變量已定義</span>
+                            </div>
+                        `;
+                    } else {
+                        domStatus.innerHTML += `
+                            <div class="status error">
+                                <span class="status-icon">❌</span>
+                                <span>characterData 變量未定義</span>
+                            </div>
+                        `;
+                    }
+
+                    // 檢查關鍵函數
+                    const functions = [
+                        'openRegexEditor',
+                        'updatePreview',
+                        'exportCharacter',
+                        'importCharacter'
+                    ];
+
+                    functions.forEach(funcName => {
+                        const exists = typeof window[funcName] === 'function';
+                        const status = exists ? 'success' : 'error';
+                        const icon = exists ? '✅' : '❌';
+                        
+                        domStatus.innerHTML += `
+                            <div class="status ${status}">
+                                <span class="status-icon">${icon}</span>
+                                <span>函數 ${funcName}: ${exists ? '已定義' : '未定義'}</span>
+                            </div>
+                        `;
+                    });
+                }, 100);
+            };
+            
+            document.head.appendChild(script);
+        }
+
+        // 運行所有測試
+        console.log('=== 開始診斷 ===');
+        testFiles();
+        testJavaScript();
+        loadScriptAndCheckDOM();
+    </script>
+</body>
+</html>

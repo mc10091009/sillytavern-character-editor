@@ -477,7 +477,7 @@ async function embedCharaData(pngData, characterCard) {
     }
     const base64Data = btoa(binaryString);
     console.log('Base64 编码后长度:', base64Data.length);
-    console.log('Base64 前 100 字符:', base64Data
+    console.log('Base64 前 100 字符:', base64Data.substring(0, 100));
 
     const textEncoder = new TextEncoder();
     const base64Bytes = textEncoder.encode(base64Data);
