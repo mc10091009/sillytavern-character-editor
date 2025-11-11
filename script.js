@@ -1143,6 +1143,10 @@ clearBtn.addEventListener('click', () => {
 
 // 世界书功能
 worldBookBtn.addEventListener('click', () => {
+    console.log('打开世界书模态框');
+    console.log('searchEntry元素:', document.getElementById('searchEntry'));
+    console.log('addEntryBtn元素:', addEntryBtn);
+    console.log('entriesList元素:', entriesList);
     worldBookModal.style.display = 'block';
     renderEntries();
 });
@@ -1237,6 +1241,9 @@ if (tokenBudgetInput) {
 
 // 渲染条目列表
 function renderEntries() {
+    console.log('renderEntries 被调用');
+    console.log('条目数量:', characterData.character_book.entries.length);
+    
     const entries = characterData.character_book.entries;
     
     // 过滤搜索
