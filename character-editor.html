@@ -207,23 +207,48 @@
 
     <!-- 世界书编辑器模态框 -->
     <div id="worldBookModal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width: 1400px;">
             <div class="modal-header">
                 <h2>📚 世界书编辑器</h2>
                 <span class="close">&times;</span>
             </div>
             <div class="modal-body">
-                <div class="worldbook-controls">
+                <!-- 世界书元数据 -->
+                <div style="background: #1a1a1a; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #333;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                        <div>
+                            <label style="display: block; font-size: 11px; color: #888; margin-bottom: 6px;">世界書名稱</label>
+                            <input type="text" id="lorebookName" placeholder="我的世界書" 
+                                   style="width: 100%; background: #222; border: 1px solid #333; padding: 8px; border-radius: 6px; color: #fff;">
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 11px; color: #888; margin-bottom: 6px;">掃描深度</label>
+                            <input type="number" id="scanDepth" value="100" min="0"
+                                   style="width: 100%; background: #222; border: 1px solid #333; padding: 8px; border-radius: 6px; color: #fff;">
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 11px; color: #888; margin-bottom: 6px;">Token 預算</label>
+                            <input type="number" id="tokenBudget" value="2048" min="0"
+                                   style="width: 100%; background: #222; border: 1px solid #333; padding: 8px; border-radius: 6px; color: #fff;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 搜索和控制栏 -->
+                <div class="worldbook-controls" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 15px;">
+                    <input type="text" id="searchEntry" placeholder="🔍 搜索条目..." 
+                           style="flex: 1; background: #222; border: 1px solid #333; padding: 10px 15px; border-radius: 6px; color: #fff;">
                     <button id="addEntryBtn" class="btn btn-primary">➕ 添加条目</button>
                     <div class="worldbook-info">
-                        <span>共 <strong id="entryCount">0</strong> 个条目</span>
+                        <span>共 <strong id="entryCount">0</strong> 个条目 | 已启用 <strong id="enabledCount">0</strong></span>
                     </div>
                 </div>
 
                 <div id="entriesList" class="entries-list">
                     <div class="empty-state">
-                        <p>暂无世界书条目</p>
-                        <p class="hint">世界书用于存储角色背景、世界观设定等信息，当对话中出现关键词时会自动触发</p>
+                        <p style="font-size: 48px; margin-bottom: 15px;">📚</p>
+                        <p style="font-size: 18px; font-weight: 600;">暂无世界书条目</p>
+                        <p class="hint">点击「添加条目」开始创建你的世界设定</p>
                     </div>
                 </div>
             </div>

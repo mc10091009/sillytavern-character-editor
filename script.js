@@ -1171,91 +1171,291 @@ addEntryBtn.addEventListener('click', () => {
         insertion_order: 100,
         case_sensitive: false,
         priority: 10,
-        comment: ''
+        comment: '',
+        // 高级字段
+        use_regex: false,
+        constant: false,
+        match_whole_words: false,
+        position: 'before_char',
+        depth: 4,
+        role: 0,
+        scan_depth: null,
+        sticky: 0,
+        cooldown: 0,
+        delay: 0,
+        automation_id: ''
     };
 
     characterData.character_book.entries.push(newEntry);
     renderEntries();
+    
+    // 滚动到新条目
+    setTimeout(() => {
+        const newEntryEl = document.querySelector(`[data-id="${newEntry.id}"]`);
+        if (newEntryEl) {
+            newEntryEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }, 100);
 });
+
+// 搜索功能
+let searchTerm = '';
+const searchInput = document.getElementById('searchEntry');
+if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+        searchTerm = e.target.value.toLowerCase();
+        renderEntries();
+    });
+}
+
+// 世界书元数据
+const lorebookNameInput = document.getElementById('lorebookName');
+const scanDepthInput = document.getElementById('scanDepth');
+const tokenBudgetInput = document.getElementById('tokenBudget');
+const enabledCountEl = document.getElementById('enabledCount');
+
+if (lorebookNameInput) {
+    lorebookNameInput.addEventListener('input', (e) => {
+        if (!characterData.character_book) characterData.character_book = { entries: [] };
+        characterData.character_book.name = e.target.value;
+    });
+}
+
+if (scanDepthInput) {
+    scanDepthInput.addEventListener('input', (e) => {
+        if (!characterData.character_book) characterData.character_book = { entries: [] };
+        characterData.character_book.scan_depth = parseInt(e.target.value) || 100;
+    });
+}
+
+if (tokenBudgetInput) {
+    tokenBudgetInput.addEventListener('input', (e) => {
+        if (!characterData.character_book) characterData.character_book = { entries: [] };
+        characterData.character_book.token_budget = parseInt(e.target.value) || 2048;
+    });
+}
 
 // 渲染条目列表
 function renderEntries() {
     const entries = characterData.character_book.entries;
-    entryCount.textContent = entries.length;
+    
+    // 过滤搜索
+    const filteredEntries = entries.filter(entry => {
+        if (!searchTerm) return true;
+        const searchableText = [
+            entry.comment || '',
+            entry.content || '',
+            ...(entry.keys || [])
+        ].join(' ').toLowerCase();
+        return searchableText.includes(searchTerm);
+    });
 
-    if (entries.length === 0) {
-        entriesList.innerHTML = `
-            <div class="empty-state">
-                <p>暂无世界书条目</p>
-                <p class="hint">世界书用于存储角色背景、世界观设定等信息，当对话中出现关键词时会自动触发</p>
-            </div>
-        `;
+    entryCount.textContent = entries.length;
+    if (enabledCountEl) {
+        enabledCountEl.textContent = entries.filter(e => e.enabled).length;
+    }
+
+    // 更新元数据输入框
+    if (lorebookNameInput && characterData.character_book.name) {
+        lorebookNameInput.value = characterData.character_book.name;
+    }
+    if (scanDepthInput && characterData.character_book.scan_depth) {
+        scanDepthInput.value = characterData.character_book.scan_depth;
+    }
+    if (tokenBudgetInput && characterData.character_book.token_budget) {
+        tokenBudgetInput.value = characterData.character_book.token_budget;
+    }
+
+    if (filteredEntries.length === 0) {
+        if (searchTerm) {
+            entriesList.innerHTML = `
+                <div class="empty-state">
+                    <p style="font-size: 48px; margin-bottom: 15px;">🔍</p>
+                    <p style="font-size: 18px; font-weight: 600;">找不到匹配的条目</p>
+                    <p class="hint">尝试其他搜索关键词</p>
+                </div>
+            `;
+        } else {
+            entriesList.innerHTML = `
+                <div class="empty-state">
+                    <p style="font-size: 48px; margin-bottom: 15px;">📚</p>
+                    <p style="font-size: 18px; font-weight: 600;">暂无世界书条目</p>
+                    <p class="hint">点击「添加条目」开始创建你的世界设定</p>
+                </div>
+            `;
+        }
         return;
     }
 
-    entriesList.innerHTML = entries.map((entry, index) => `
+    entriesList.innerHTML = filteredEntries.map((entry, index) => `
         <div class="entry-item" data-id="${entry.id}">
             <div class="entry-header">
-                <div class="entry-title">条目 #${index + 1}</div>
+                <div class="entry-title">${entry.comment || `条目 #${index + 1}`}</div>
                 <div class="entry-actions">
                     <button class="btn-small btn-toggle ${entry.enabled ? '' : 'disabled'}" onclick="toggleEntry(${entry.id})">
                         ${entry.enabled ? '✓ 启用' : '✗ 禁用'}
                     </button>
+                    <button class="btn-small" onclick="moveEntry(${entry.id}, 'up')">↑</button>
+                    <button class="btn-small" onclick="moveEntry(${entry.id}, 'down')">↓</button>
                     <button class="btn-small btn-delete" onclick="deleteEntry(${entry.id})">🗑️ 删除</button>
                 </div>
             </div>
             
             <div class="entry-form">
                 <div class="form-group">
-                    <label>关键词（触发词）</label>
-                    <div class="keywords-input" id="keywords-${entry.id}">
+                    <label>条目名称</label>
+                    <input type="text" value="${entry.comment || ''}" placeholder="为此条目命名" 
+                           onchange="updateEntryField(${entry.id}, 'comment', this.value)">
+                </div>
+
+                <div class="form-group">
+                    <label>关键词 ${entry.use_regex ? '(正则表达式)' : ''}</label>
+                    <div class="keywords-input" id="keywords-${entry.id}" onclick="focusKeywordInput(${entry.id})">
                         ${entry.keys.map(key => `
-                            <span class="keyword-tag">
+                            <span class="keyword-tag ${entry.use_regex ? 'regex-tag' : ''}">
                                 ${key}
-                                <span class="remove-keyword" onclick="removeKeyword(${entry.id}, '${key}')">×</span>
+                                <span class="remove-keyword" onclick="removeKeyword(${entry.id}, '${key.replace(/'/g, "\\'")}')">×</span>
                             </span>
                         `).join('')}
-                        <input type="text" class="keyword-input-field" placeholder="输入关键词后按回车" 
-                               onkeypress="addKeyword(event, ${entry.id})">
+                        <input type="text" class="keyword-input-field" id="keyword-input-${entry.id}"
+                               placeholder="输入关键词后按 Enter" 
+                               onkeydown="handleKeywordInput(event, ${entry.id})">
                     </div>
-                    <div class="help-text">当对话中出现这些关键词时，会触发此条目</div>
+                    <div class="help-text">按 Enter 添加关键词，点击 × 删除</div>
                 </div>
                 
                 <div class="form-group">
                     <label>内容</label>
-                    <textarea rows="4" placeholder="输入世界书内容..." 
-                              onchange="updateEntryContent(${entry.id}, this.value)">${entry.content}</textarea>
-                    <div class="help-text">触发时会将此内容注入到对话上下文中</div>
+                    <textarea rows="4" placeholder="当关键词被触发时插入的内容" 
+                              onchange="updateEntryContent(${entry.id}, this.value)">${entry.content || ''}</textarea>
                 </div>
                 
                 <div class="form-row">
                     <div class="form-group">
                         <label>插入顺序</label>
-                        <input type="number" value="${entry.insertion_order}" 
+                        <input type="number" value="${entry.insertion_order || 100}" 
                                onchange="updateEntryField(${entry.id}, 'insertion_order', parseInt(this.value))">
-                        <div class="help-text">数值越小越靠前插入</div>
                     </div>
                     
                     <div class="form-group">
                         <label>优先级</label>
-                        <input type="number" value="${entry.priority}" 
+                        <input type="number" value="${entry.priority || 10}" 
                                onchange="updateEntryField(${entry.id}, 'priority', parseInt(this.value))">
-                        <div class="help-text">数值越大优先级越高</div>
                     </div>
                 </div>
-                
-                <div class="form-group">
-                    <label>备注</label>
-                    <input type="text" value="${entry.comment}" placeholder="可选的备注说明" 
-                           onchange="updateEntryField(${entry.id}, 'comment', this.value)">
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" ${entry.use_regex ? 'checked' : ''} 
+                                   onchange="updateEntryField(${entry.id}, 'use_regex', this.checked)">
+                            使用正则表达式
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" ${entry.case_sensitive ? 'checked' : ''} 
+                                   onchange="updateEntryField(${entry.id}, 'case_sensitive', this.checked)">
+                            区分大小写
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" ${entry.constant ? 'checked' : ''} 
+                                   onchange="updateEntryField(${entry.id}, 'constant', this.checked)">
+                            常驻（总是插入）
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" ${entry.match_whole_words ? 'checked' : ''} 
+                                   onchange="updateEntryField(${entry.id}, 'match_whole_words', this.checked)">
+                            匹配完整单词
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>插入位置</label>
+                        <select onchange="updateEntryField(${entry.id}, 'position', this.value)">
+                            <option value="before_char" ${entry.position === 'before_char' ? 'selected' : ''}>角色定义之前</option>
+                            <option value="after_char" ${entry.position === 'after_char' ? 'selected' : ''}>角色定义之后</option>
+                            <option value="before_example" ${entry.position === 'before_example' ? 'selected' : ''}>范例消息之前</option>
+                            <option value="after_example" ${entry.position === 'after_example' ? 'selected' : ''}>范例消息之后</option>
+                            <option value="top" ${entry.position === 'top' ? 'selected' : ''}>@D 🔧 在系统深度</option>
+                            <option value="depth" ${entry.position === 'depth' ? 'selected' : ''}>@D 👤 在用户深度</option>
+                            <option value="ai_depth" ${entry.position === 'ai_depth' ? 'selected' : ''}>@D 🤖 在 AI 深度</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>深度 (Depth)</label>
+                        <input type="number" value="${entry.depth || 4}" min="0" max="999"
+                               onchange="updateEntryField(${entry.id}, 'depth', parseInt(this.value))">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>角色过滤 (Role)</label>
+                        <select onchange="updateEntryField(${entry.id}, 'role', parseInt(this.value))">
+                            <option value="0" ${(entry.role === 0 || !entry.role) ? 'selected' : ''}>All types (default)</option>
+                            <option value="1" ${entry.role === 1 ? 'selected' : ''}>System</option>
+                            <option value="2" ${entry.role === 2 ? 'selected' : ''}>User</option>
+                            <option value="3" ${entry.role === 3 ? 'selected' : ''}>Assistant</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>扫描深度 (Scan Depth)</label>
+                        <input type="number" value="${entry.scan_depth || ''}" placeholder="留空使用全局设置"
+                               onchange="updateEntryField(${entry.id}, 'scan_depth', this.value ? parseInt(this.value) : null)">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>黏性 (Sticky)</label>
+                        <input type="number" value="${entry.sticky || 0}" min="0"
+                               onchange="updateEntryField(${entry.id}, 'sticky', parseInt(this.value))">
+                        <div class="help-text">触发后保持激活的轮数</div>
+                    </div>
+                    <div class="form-group">
+                        <label>冷却 (Cooldown)</label>
+                        <input type="number" value="${entry.cooldown || 0}" min="0"
+                               onchange="updateEntryField(${entry.id}, 'cooldown', parseInt(this.value))">
+                        <div class="help-text">停用后的冷却轮数</div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>延迟 (Delay)</label>
+                        <input type="number" value="${entry.delay || 0}" min="0"
+                               onchange="updateEntryField(${entry.id}, 'delay', parseInt(this.value))">
+                        <div class="help-text">触发前的延迟轮数</div>
+                    </div>
+                    <div class="form-group">
+                        <label>自动化 ID</label>
+                        <input type="text" value="${entry.automation_id || ''}" 
+                               onchange="updateEntryField(${entry.id}, 'automation_id', this.value)"
+                               placeholder="用于自动化触发">
                 </div>
             </div>
         </div>
     `).join('');
 }
 
-// 添加关键词
-window.addKeyword = function (event, entryId) {
+// 聚焦关键词输入框
+window.focusKeywordInput = function(entryId) {
+    const input = document.getElementById(`keyword-input-${entryId}`);
+    if (input) input.focus();
+};
+
+// 处理关键词输入
+window.handleKeywordInput = function(event, entryId) {
     if (event.key === 'Enter') {
         event.preventDefault();
         const input = event.target;
@@ -1267,9 +1467,16 @@ window.addKeyword = function (event, entryId) {
                 entry.keys.push(keyword);
                 input.value = '';
                 renderEntries();
+                // 重新聚焦输入框
+                setTimeout(() => focusKeywordInput(entryId), 50);
             }
         }
     }
+};
+
+// 添加关键词（保留旧函数以兼容）
+window.addKeyword = function (event, entryId) {
+    handleKeywordInput(event, entryId);
 };
 
 // 移除关键词
@@ -1310,6 +1517,22 @@ window.toggleEntry = function (entryId) {
 window.deleteEntry = function (entryId) {
     if (confirm('确定要删除这个条目吗？')) {
         characterData.character_book.entries = characterData.character_book.entries.filter(e => e.id !== entryId);
+        renderEntries();
+    }
+};
+
+// 移动条目
+window.moveEntry = function(entryId, direction) {
+    const entries = characterData.character_book.entries;
+    const index = entries.findIndex(e => e.id === entryId);
+    
+    if (index === -1) return;
+    
+    if (direction === 'up' && index > 0) {
+        [entries[index], entries[index - 1]] = [entries[index - 1], entries[index]];
+        renderEntries();
+    } else if (direction === 'down' && index < entries.length - 1) {
+        [entries[index], entries[index + 1]] = [entries[index + 1], entries[index]];
         renderEntries();
     }
 };
