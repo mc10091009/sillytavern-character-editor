@@ -152,7 +152,7 @@
                 </div>
 
                 <div class="form-group">
-                    <button onclick="openRegexEditor()" class="btn btn-secondary"
+                    <button id="openRegexEditorBtn" class="btn btn-secondary"
                         style="width: 100%; margin-bottom: 10px;">🔧 正则表达式工具</button>
                 </div>
 
@@ -207,43 +207,55 @@
 
     <!-- 世界书编辑器模态框 -->
     <div id="worldBookModal" class="modal">
-        <div class="modal-content" style="max-width: 1400px;">
-            <div class="modal-header">
-                <h2>📚 世界书编辑器</h2>
+        <div class="modal-content worldbook-modal">
+            <div class="modal-header worldbook-header">
+                <div>
+                    <p class="modal-eyebrow">WORLD BOOK WORKSPACE</p>
+                    <h2>📚 世界书编辑器</h2>
+                    <p class="modal-subtitle">集中管理触发关键词、背景设定与提示词，让角色信息与世界观保持一致</p>
+                </div>
                 <span class="close">&times;</span>
             </div>
-            <div class="modal-body">
-                <!-- 世界书名称 -->
-                <div class="form-group">
-                    <label>📚 世界书名称</label>
+            <div class="worldbook-toolbar">
+                <div class="toolbar-field">
+                    <label for="lorebookName">世界书名称</label>
                     <input type="text" id="lorebookName" placeholder="为这个世界书命名...">
-                    <div class="help-text">可选：给世界书起一个有意义的名字，方便识别</div>
                 </div>
-
-                <!-- 搜索和控制栏 -->
-                <div class="worldbook-controls">
-                    <input type="text" id="searchEntry" class="search-input" placeholder="🔍 搜索条目（关键词、内容、备注）...">
-                    <button id="addEntryBtn" class="btn btn-primary" style="white-space: nowrap;">➕ 添加条目</button>
-                    <div class="worldbook-info">
-                        <span>共 <strong id="entryCount" class="count-number">0</strong> 个条目 | 已启用 <strong id="enabledCount" class="count-enabled">0</strong></span>
+                <div class="toolbar-actions">
+                    <div class="search-field">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="searchEntry" class="search-input" placeholder="搜索条目、关键词或内容">
                     </div>
-                </div>
-
-                <div id="entriesList" class="entries-list">
-                    <div class="empty-state">
-                        <p class="empty-icon">📚</p>
-                        <p class="empty-title">暂无世界书条目</p>
-                        <p class="hint">点击「添加条目」开始创建你的世界设定</p>
-                    </div>
+                    <button id="addEntryBtn" class="btn btn-primary">➕ 新增条目</button>
                 </div>
             </div>
-            <div class="modal-footer">
+            <div class="worldbook-meta-grid">
+                <div class="meta-card">
+                    <span class="meta-label">总条目</span>
+                    <strong id="entryCount">0</strong>
+                    <p class="meta-hint">所有世界书条目数量</p>
+                </div>
+                <div class="meta-card">
+                    <span class="meta-label">已启用</span>
+                    <strong id="enabledCount">0</strong>
+                    <p class="meta-hint">当前正在使用的条目</p>
+                </div>
+            </div>
+            <div id="entriesList" class="worldbook-entries">
+                <div class="worldbook-empty-state">
+                    <div class="empty-icon">🗂️</div>
+                    <p class="empty-title">还没有世界书条目</p>
+                    <p class="hint">点击「新增条目」开始记录世界观、提示词与背景细节</p>
+                </div>
+            </div>
+            <div class="modal-footer worldbook-footer">
+                <span class="footer-hint">使用上下箭头调整顺序，或通过启用开关快速控制条目</span>
                 <button id="closeModalBtn" class="btn btn-secondary">关闭</button>
             </div>
         </div>
     </div>
 
-    <!-- 正则脚本管理模态框 -->
+<!-- 正则脚本管理模态框 -->
     <div id="regexScriptsModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -412,6 +424,78 @@
         
         window.addEventListener('unhandledrejection', function(e) {
             console.error('未處理的 Promise 拒絕:', e.reason);
+        });
+        
+        // 直接修復：為正則編輯器按鈕添加事件監聽器
+        console.log('=== 添加正則編輯器按鈕監聽器 ===');
+        document.addEventListener('DOMContentLoaded', function() {
+            const btn = document.getElementById('openRegexEditorBtn');
+            const modal = document.getElementById('regexEditorModal');
+            
+            console.log('按鈕:', btn);
+            console.log('模態框:', modal);
+            
+            if (btn && modal) {
+                console.log('✓ 添加點擊事件');
+                btn.addEventListener('click', function() {
+                    console.log('✓ 按鈕被點擊，打開模態框');
+                    modal.style.display = 'block';
+                });
+                
+                // 添加關閉功能
+                const closeBtns = modal.querySelectorAll('.close-regex');
+                closeBtns.forEach(function(closeBtn) {
+                    closeBtn.addEventListener('click', function() {
+                        modal.style.display = 'none';
+                    });
+                });
+                
+                // 點擊外部關閉
+                window.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        modal.style.display = 'none';
+                    }
+                });
+            } else {
+                console.error('✗ 找不到按鈕或模態框');
+            }
+            
+            // 正則腳本管理按鈕
+            console.log('=== 添加正則腳本管理按鈕監聽器 ===');
+            const scriptsBtn = document.getElementById('regexScriptsBtn');
+            const scriptsModal = document.getElementById('regexScriptsModal');
+            
+            console.log('腳本按鈕:', scriptsBtn);
+            console.log('腳本模態框:', scriptsModal);
+            
+            if (scriptsBtn && scriptsModal) {
+                console.log('✓ 添加腳本管理點擊事件');
+                scriptsBtn.addEventListener('click', function() {
+                    console.log('✓ 腳本管理按鈕被點擊，打開模態框');
+                    scriptsModal.style.display = 'block';
+                    // 如果 renderRegexScripts 函數存在，調用它
+                    if (typeof window.renderRegexScripts === 'function') {
+                        window.renderRegexScripts();
+                    }
+                });
+                
+                // 添加關閉功能
+                const closeScriptsBtns = scriptsModal.querySelectorAll('.close-regex-scripts');
+                closeScriptsBtns.forEach(function(closeBtn) {
+                    closeBtn.addEventListener('click', function() {
+                        scriptsModal.style.display = 'none';
+                    });
+                });
+                
+                // 點擊外部關閉
+                window.addEventListener('click', function(e) {
+                    if (e.target === scriptsModal) {
+                        scriptsModal.style.display = 'none';
+                    }
+                });
+            } else {
+                console.error('✗ 找不到腳本管理按鈕或模態框');
+            }
         });
     </script>
     <script src="script.js"></script>

@@ -1,7 +1,7 @@
 // 主题处理脚本 - 用于所有页面
 (function() {
     // 从 localStorage 读取主题设置
-    const savedTheme = localStorage.getItem('theme') || 'dark';
+    const savedTheme = localStorage.getItem('theme') || 'light';
     
     // 应用主题
     function applyTheme() {

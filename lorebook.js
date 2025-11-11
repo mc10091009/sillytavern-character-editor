@@ -31,31 +31,42 @@ const regexEntriesEl = document.getElementById('regexEntries');
 const totalKeywordsEl = document.getElementById('totalKeywords');
 
 // 監聽元數據輸入
-lorebookNameInput.addEventListener('input', (e) => {
-    lorebookData.name = e.target.value;
-});
+if (lorebookNameInput) {
+    lorebookNameInput.addEventListener('input', (e) => {
+        lorebookData.name = e.target.value;
+    });
+}
 
-lorebookDescriptionInput.addEventListener('input', (e) => {
-    lorebookData.description = e.target.value;
-});
+if (lorebookDescriptionInput) {
+    lorebookDescriptionInput.addEventListener('input', (e) => {
+        lorebookData.description = e.target.value;
+    });
+}
 
-scanDepthInput.addEventListener('input', (e) => {
-    lorebookData.scan_depth = parseInt(e.target.value) || 100;
-});
+if (scanDepthInput) {
+    scanDepthInput.addEventListener('input', (e) => {
+        lorebookData.scan_depth = parseInt(e.target.value) || 100;
+    });
+}
 
-tokenBudgetInput.addEventListener('input', (e) => {
-    lorebookData.token_budget = parseInt(e.target.value) || 2048;
-});
+if (tokenBudgetInput) {
+    tokenBudgetInput.addEventListener('input', (e) => {
+        lorebookData.token_budget = parseInt(e.target.value) || 2048;
+    });
+}
 
 // 搜索功能
 let searchTerm = '';
-searchInput.addEventListener('input', (e) => {
-    searchTerm = e.target.value.toLowerCase();
-    renderEntries();
-});
+if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+        searchTerm = e.target.value.toLowerCase();
+        renderEntries();
+    });
+}
 
 // 新增條目
-addEntryBtn.addEventListener('click', () => {
+if (addEntryBtn) {
+    addEntryBtn.addEventListener('click', () => {
     const newEntry = {
         id: Date.now(),
         keys: [],
@@ -81,10 +92,11 @@ addEntryBtn.addEventListener('click', () => {
         cooldown: 0,
         delay: 0
     };
-    lorebookData.entries.unshift(newEntry);
-    renderEntries();
-    updateStats();
-});
+        lorebookData.entries.unshift(newEntry);
+        renderEntries();
+        updateStats();
+    });
+}
 
 // 渲染條目列表
 function renderEntries() {
@@ -123,8 +135,8 @@ function renderEntries() {
     }
 
     const html = filteredEntries.map(entry => {
-        const keywordsHtml = (entry.keys || []).map(key => 
-            `<span class="keyword-tag ${entry.use_regex ? 'regex-tag' : ''}">${escapeHtml(key)}</span>`
+        const keywordsHtml = (entry.keys || []).map((key, index) => 
+            `<span class="keyword-tag ${entry.use_regex ? 'regex-tag' : ''}">${escapeHtml(key)} <span class="remove-keyword" onclick="removeKeyword(${entry.id}, ${index})">×</span></span>`
         ).join('');
 
         return `
@@ -392,7 +404,8 @@ window.removeKeyword = function(entryId, index) {
 };
 
 // 導出 JSON
-exportJsonBtn.addEventListener('click', () => {
+if (exportJsonBtn) {
+    exportJsonBtn.addEventListener('click', () => {
     if (lorebookData.entries.length === 0) {
         alert('沒有條目可以導出！');
         return;
@@ -443,16 +456,20 @@ exportJsonBtn.addEventListener('click', () => {
     a.click();
     URL.revokeObjectURL(url);
 
-    console.log('✓ 世界書導出成功');
-    alert(`✓ 成功導出 ${lorebookData.entries.length} 個條目！`);
-});
+        console.log('✓ 世界書導出成功');
+        alert(`✓ 成功導出 ${lorebookData.entries.length} 個條目！`);
+    });
+}
 
 // 導入 JSON
-importJsonBtn.addEventListener('click', () => {
-    importJsonFile.click();
-});
+if (importJsonBtn && importJsonFile) {
+    importJsonBtn.addEventListener('click', () => {
+        importJsonFile.click();
+    });
+}
 
-importJsonFile.addEventListener('change', async (e) => {
+if (importJsonFile) {
+    importJsonFile.addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
@@ -496,10 +513,10 @@ importJsonFile.addEventListener('change', async (e) => {
             }));
 
             // 更新界面
-            lorebookNameInput.value = lorebookData.name;
-            lorebookDescriptionInput.value = lorebookData.description;
-            scanDepthInput.value = lorebookData.scan_depth;
-            tokenBudgetInput.value = lorebookData.token_budget;
+            if (lorebookNameInput) lorebookNameInput.value = lorebookData.name;
+            if (lorebookDescriptionInput) lorebookDescriptionInput.value = lorebookData.description;
+            if (scanDepthInput) scanDepthInput.value = lorebookData.scan_depth;
+            if (tokenBudgetInput) tokenBudgetInput.value = lorebookData.token_budget;
 
             renderEntries();
             updateStats();
@@ -513,15 +530,19 @@ importJsonFile.addEventListener('change', async (e) => {
         alert('❌ 導入失敗: ' + error.message);
     }
 
-    e.target.value = '';
-});
+        e.target.value = '';
+    });
+}
 
 // 從 PNG 導入
-importPngBtn.addEventListener('click', () => {
-    importPngFile.click();
-});
+if (importPngBtn && importPngFile) {
+    importPngBtn.addEventListener('click', () => {
+        importPngFile.click();
+    });
+}
 
-importPngFile.addEventListener('change', async (e) => {
+if (importPngFile) {
+    importPngFile.addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
@@ -569,10 +590,10 @@ importPngFile.addEventListener('change', async (e) => {
                         delay: entry.delay || 0
                     }));
 
-                    lorebookNameInput.value = lorebookData.name;
-                    lorebookDescriptionInput.value = lorebookData.description;
-                    scanDepthInput.value = lorebookData.scan_depth;
-                    tokenBudgetInput.value = lorebookData.token_budget;
+                    if (lorebookNameInput) lorebookNameInput.value = lorebookData.name;
+                    if (lorebookDescriptionInput) lorebookDescriptionInput.value = lorebookData.description;
+                    if (scanDepthInput) scanDepthInput.value = lorebookData.scan_depth;
+                    if (tokenBudgetInput) tokenBudgetInput.value = lorebookData.token_budget;
 
                     renderEntries();
                     updateStats();
@@ -590,8 +611,9 @@ importPngFile.addEventListener('change', async (e) => {
         alert('❌ 導入失敗: ' + error.message);
     }
 
-    e.target.value = '';
-});
+        e.target.value = '';
+    });
+}
 
 // 從 PNG 提取數據（複用主程序的函數）
 async function extractCharaData(pngData) {
@@ -652,13 +674,15 @@ async function extractCharaData(pngData) {
 }
 
 // 清空全部
-clearAllBtn.addEventListener('click', () => {
-    if (confirm('確定要清空所有條目嗎？此操作無法撤銷！')) {
-        lorebookData.entries = [];
-        renderEntries();
-        updateStats();
-    }
-});
+if (clearAllBtn) {
+    clearAllBtn.addEventListener('click', () => {
+        if (confirm('確定要清空所有條目嗎？此操作無法撤銷！')) {
+            lorebookData.entries = [];
+            renderEntries();
+            updateStats();
+        }
+    });
+}
 
 // 工具函數
 function escapeHtml(text) {

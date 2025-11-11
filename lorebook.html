@@ -128,6 +128,7 @@
         .search-bar {
             margin-bottom: 20px;
             position: relative;
+            z-index: 1;
         }
 
         .search-bar input {
@@ -180,15 +181,15 @@
                     </div>
                     <div class="meta-item">
                         <label>描述</label>
-                        <input type="text" id="lorebookDescription" placeholder="世界設定描述">
+                        <input type="text" id="lorebookDescription" placeholder="世界書描述（可選）">
                     </div>
                     <div class="meta-item">
                         <label>掃描深度</label>
-                        <input type="number" id="scanDepth" value="100" min="1" max="1000">
+                        <input type="number" id="scanDepth" value="100" min="1">
                     </div>
                     <div class="meta-item">
                         <label>Token 預算</label>
-                        <input type="number" id="tokenBudget" value="2048" min="1" max="10000">
+                        <input type="number" id="tokenBudget" value="2048" min="1">
                     </div>
                 </div>
             </div>
@@ -230,7 +231,7 @@
             <input type="text" id="searchInput" placeholder="搜索條目名稱、關鍵詞或內容...">
         </div>
 
-        <div class="button-group">
+        <div class="button-group" style="position: relative; z-index: 2;">
             <button class="btn btn-primary" id="addEntryBtn">➕ 新增條目</button>
             <button class="btn btn-secondary" id="importJsonBtn">📥 導入 JSON</button>
             <button class="btn btn-secondary" id="exportJsonBtn">📤 導出 JSON</button>

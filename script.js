@@ -3,6 +3,9 @@ console.log('=== script.js 開始執行 ===');
 console.log('當前時間:', new Date().toLocaleString());
 console.log('DOM 狀態:', document.readyState);
 
+// 追蹤條目收縮狀態
+let collapsedEntries = new Set();
+
 // 角色数据
 let characterData = {
     name: '',
@@ -1213,6 +1216,18 @@ let searchTerm = '';
 const searchInput = document.getElementById('searchEntry');
 const enabledCountEl = document.getElementById('enabledCount');
 
+const htmlEscapeMap = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+};
+
+function escapeHtmlValue(value = '') {
+    return String(value).replace(/[&<>"']/g, (char) => htmlEscapeMap[char] || char);
+}
+
 if (searchInput) {
     searchInput.addEventListener('input', (e) => {
         searchTerm = e.target.value.toLowerCase();
@@ -1245,187 +1260,397 @@ function renderEntries() {
         lorebookNameInput.value = characterData.character_book.name || '';
     }
 
+
+
     if (filteredEntries.length === 0) {
-        if (searchTerm) {
-            entriesList.innerHTML = `
-                <div class="empty-state">
-                    <p style="font-size: 48px; margin-bottom: 15px;">🔍</p>
-                    <p style="font-size: 18px; font-weight: 600;">找不到匹配的条目</p>
-                    <p class="hint">尝试其他搜索关键词</p>
-                </div>
-            `;
-        } else {
-            entriesList.innerHTML = `
-                <div class="empty-state">
-                    <p style="font-size: 48px; margin-bottom: 15px;">📚</p>
-                    <p style="font-size: 18px; font-weight: 600;">暂无世界书条目</p>
-                    <p class="hint">点击「添加条目」开始创建你的世界设定</p>
-                </div>
-            `;
-        }
+
+        const icon = searchTerm ? '🔍' : '🗂️';
+
+        const title = searchTerm ? '找不到匹配的条目' : '还没有世界书条目';
+
+        const hint = searchTerm ? '尝试其他搜索关键词' : '点击「新增条目」开始记录世界观、提示词与背景细节';
+
+        entriesList.innerHTML = `
+
+            <div class="worldbook-empty-state">
+
+                <div class="empty-icon">${icon}</div>
+
+                <p class="empty-title">${title}</p>
+
+                <p class="hint">${hint}</p>
+
+            </div>
+
+        `;
+
         return;
+
     }
 
-    entriesList.innerHTML = filteredEntries.map((entry, index) => `
-        <div class="entry-item" data-id="${entry.id}">
-            <div class="entry-header">
-                <div class="entry-title">${entry.comment || `条目 #${index + 1}`}</div>
-                <div class="entry-actions">
-                    <button class="btn-small btn-toggle ${entry.enabled ? '' : 'disabled'}" onclick="toggleEntry(${entry.id})">
-                        ${entry.enabled ? '✓ 启用' : '✗ 禁用'}
+    entriesList.innerHTML = '';
+
+    const fragment = document.createDocumentFragment();
+
+    filteredEntries.forEach((entry, index) => {
+
+        const displayName = entry.comment?.trim()
+
+            ? escapeHtmlValue(entry.comment)
+
+            : `条目 #${index + 1}`;
+
+        const commentValue = escapeHtmlValue(entry.comment || '');
+
+        const contentValue = escapeHtmlValue(entry.content || '');
+
+        const automationValue = escapeHtmlValue(entry.automation_id || '');
+
+        const keywords = entry.keys || [];
+
+        const keywordsHtml = keywords.length
+
+            ? keywords.map(key => `
+
+                <span class="keyword-chip ${entry.use_regex ? 'regex-tag' : ''}">
+
+                    ${escapeHtmlValue(key)}
+
+                    <button type="button" onclick="removeKeyword(${entry.id}, '${key.replace(/'/g, "\\'")}')">×</button>
+                </span>
+
+            `).join('')
+
+            : '<span class="keyword-chip chip-empty">暂无关键词</span>';
+
+        const entryElement = document.createElement('article');
+
+        entryElement.className = 'worldbook-entry';
+
+        entryElement.setAttribute('data-id', entry.id);
+
+        entryElement.innerHTML = `
+
+            <div class="entry-header-modern" onclick="toggleEntryCollapse(${entry.id})" style="cursor: pointer;">
+
+                <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
+
+                    <button class="btn-collapse" onclick="event.stopPropagation(); toggleEntryCollapse(${entry.id})" title="展開/收縮">
+                        <span class="collapse-icon">▼</span>
                     </button>
-                    <button class="btn-small" onclick="moveEntry(${entry.id}, 'up')">↑</button>
-                    <button class="btn-small" onclick="moveEntry(${entry.id}, 'down')">↓</button>
+
+                    <div>
+
+                        <p class="entry-label">条目 #${index + 1}</p>
+
+                        <h3 class="entry-title">${displayName}</h3>
+
+                        <p class="entry-meta">插入顺序 ${entry.insertion_order || 100} · 优先级 ${entry.priority || 10}</p>
+
+                    </div>
+
+                </div>
+
+                <div class="entry-actions" onclick="event.stopPropagation()">
+
+                    <button class="btn-small btn-toggle ${entry.enabled ? '' : 'disabled'}" onclick="toggleEntry(${entry.id})">
+
+                        ${entry.enabled ? '✓ 启用' : '✗ 禁用'}
+
+                    </button>
+
+                    <button class="btn-icon" title="上移" onclick="moveEntry(${entry.id}, 'up')">↑</button>
+
+                    <button class="btn-icon" title="下移" onclick="moveEntry(${entry.id}, 'down')">↓</button>
+
                     <button class="btn-small btn-delete" onclick="deleteEntry(${entry.id})">🗑️ 删除</button>
+
                 </div>
+
             </div>
-            
-            <div class="entry-form">
+
+            <div class="entry-form" id="entry-form-${entry.id}">
+
                 <div class="form-group">
+
                     <label>条目名称</label>
-                    <input type="text" value="${entry.comment || ''}" placeholder="为此条目命名" 
+
+                    <input type="text" value="${commentValue}" placeholder="为此条目命名"
+
                            onchange="updateEntryField(${entry.id}, 'comment', this.value)">
+
                 </div>
 
                 <div class="form-group">
+
                     <label>关键词 ${entry.use_regex ? '(正则表达式)' : ''}</label>
-                    <div class="keywords-input" id="keywords-${entry.id}" onclick="focusKeywordInput(${entry.id})">
-                        ${entry.keys.map(key => `
-                            <span class="keyword-tag ${entry.use_regex ? 'regex-tag' : ''}">
-                                ${key}
-                                <span class="remove-keyword" onclick="removeKeyword(${entry.id}, '${key.replace(/'/g, "\\'")}')">×</span>
-                            </span>
-                        `).join('')}
+
+                    <div class="keywords-input keyword-tray" id="keywords-${entry.id}" onclick="focusKeywordInput(${entry.id})">
+
+                        ${keywordsHtml}
+
                         <input type="text" class="keyword-input-field" id="keyword-input-${entry.id}"
-                               placeholder="输入关键词后按 Enter" 
+
+                               placeholder="输入关键词后按 Enter"
+
                                onkeydown="handleKeywordInput(event, ${entry.id})">
+
                     </div>
+
                     <div class="help-text">按 Enter 添加关键词，点击 × 删除</div>
+
                 </div>
-                
+
                 <div class="form-group">
+
                     <label>内容</label>
-                    <textarea rows="4" placeholder="当关键词被触发时插入的内容" 
-                              onchange="updateEntryContent(${entry.id}, this.value)">${entry.content || ''}</textarea>
+
+                    <textarea rows="4" placeholder="当关键词被触发时插入的内容"
+
+                              onchange="updateEntryContent(${entry.id}, this.value)">${contentValue}</textarea>
+
                 </div>
-                
+
                 <div class="form-row">
+
                     <div class="form-group">
+
                         <label>插入顺序</label>
-                        <input type="number" value="${entry.insertion_order || 100}" 
+
+                        <input type="number" value="${entry.insertion_order || 100}"
+
                                onchange="updateEntryField(${entry.id}, 'insertion_order', parseInt(this.value))">
+
                     </div>
-                    
+
                     <div class="form-group">
+
                         <label>优先级</label>
-                        <input type="number" value="${entry.priority || 10}" 
+
+                        <input type="number" value="${entry.priority || 10}"
+
                                onchange="updateEntryField(${entry.id}, 'priority', parseInt(this.value))">
+
                     </div>
+
                 </div>
 
                 <div class="form-row">
+
                     <div class="form-group">
+
                         <label>
+
                             <input type="checkbox" ${entry.use_regex ? 'checked' : ''} 
+
                                    onchange="updateEntryField(${entry.id}, 'use_regex', this.checked)">
+
                             使用正则表达式
+
                         </label>
+
                     </div>
+
                     <div class="form-group">
+
                         <label>
+
                             <input type="checkbox" ${entry.case_sensitive ? 'checked' : ''} 
+
                                    onchange="updateEntryField(${entry.id}, 'case_sensitive', this.checked)">
+
                             区分大小写
+
                         </label>
+
                     </div>
+
                 </div>
 
                 <div class="form-row">
+
                     <div class="form-group">
+
                         <label>
+
                             <input type="checkbox" ${entry.constant ? 'checked' : ''} 
+
                                    onchange="updateEntryField(${entry.id}, 'constant', this.checked)">
+
                             常驻（总是插入）
+
                         </label>
+
                     </div>
+
                     <div class="form-group">
+
                         <label>
+
                             <input type="checkbox" ${entry.match_whole_words ? 'checked' : ''} 
+
                                    onchange="updateEntryField(${entry.id}, 'match_whole_words', this.checked)">
+
                             匹配完整单词
+
                         </label>
+
                     </div>
+
                 </div>
 
                 <div class="form-row">
+
                     <div class="form-group">
+
                         <label>插入位置</label>
+
                         <select onchange="updateEntryField(${entry.id}, 'position', this.value)">
+
                             <option value="before_char" ${entry.position === 'before_char' ? 'selected' : ''}>角色定义之前</option>
+
                             <option value="after_char" ${entry.position === 'after_char' ? 'selected' : ''}>角色定义之后</option>
+
                             <option value="before_example" ${entry.position === 'before_example' ? 'selected' : ''}>范例消息之前</option>
+
                             <option value="after_example" ${entry.position === 'after_example' ? 'selected' : ''}>范例消息之后</option>
+
                             <option value="top" ${entry.position === 'top' ? 'selected' : ''}>@D 🔧 在系统深度</option>
+
                             <option value="depth" ${entry.position === 'depth' ? 'selected' : ''}>@D 👤 在用户深度</option>
+
                             <option value="ai_depth" ${entry.position === 'ai_depth' ? 'selected' : ''}>@D 🤖 在 AI 深度</option>
+
                         </select>
+
                     </div>
+
                     <div class="form-group">
+
                         <label>深度 (Depth)</label>
+
                         <input type="number" value="${entry.depth || 4}" min="0" max="999"
+
                                onchange="updateEntryField(${entry.id}, 'depth', parseInt(this.value))">
+
                     </div>
+
                 </div>
 
                 <div class="form-row">
+
                     <div class="form-group">
+
                         <label>角色过滤 (Role)</label>
+
                         <select onchange="updateEntryField(${entry.id}, 'role', parseInt(this.value))">
+
                             <option value="0" ${(entry.role === 0 || !entry.role) ? 'selected' : ''}>All types (default)</option>
+
                             <option value="1" ${entry.role === 1 ? 'selected' : ''}>System</option>
+
                             <option value="2" ${entry.role === 2 ? 'selected' : ''}>User</option>
+
                             <option value="3" ${entry.role === 3 ? 'selected' : ''}>Assistant</option>
+
                         </select>
+
                     </div>
+
                     <div class="form-group">
+
                         <label>扫描深度 (Scan Depth)</label>
+
                         <input type="number" value="${entry.scan_depth || ''}" placeholder="留空使用全局设置"
+
                                onchange="updateEntryField(${entry.id}, 'scan_depth', this.value ? parseInt(this.value) : null)">
+
                     </div>
+
                 </div>
 
                 <div class="form-row">
+
                     <div class="form-group">
+
                         <label>黏性 (Sticky)</label>
+
                         <input type="number" value="${entry.sticky || 0}" min="0"
+
                                onchange="updateEntryField(${entry.id}, 'sticky', parseInt(this.value))">
+
                         <div class="help-text">触发后保持激活的轮数</div>
+
                     </div>
+
                     <div class="form-group">
+
                         <label>冷却 (Cooldown)</label>
+
                         <input type="number" value="${entry.cooldown || 0}" min="0"
+
                                onchange="updateEntryField(${entry.id}, 'cooldown', parseInt(this.value))">
+
                         <div class="help-text">停用后的冷却轮数</div>
+
                     </div>
+
                 </div>
 
                 <div class="form-row">
+
                     <div class="form-group">
+
                         <label>延迟 (Delay)</label>
+
                         <input type="number" value="${entry.delay || 0}" min="0"
+
                                onchange="updateEntryField(${entry.id}, 'delay', parseInt(this.value))">
+
                         <div class="help-text">触发前的延迟轮数</div>
+
                     </div>
+
                     <div class="form-group">
+
                         <label>自动化 ID</label>
-                        <input type="text" value="${entry.automation_id || ''}" 
+
+                        <input type="text" value="${automationValue}"
+
                                onchange="updateEntryField(${entry.id}, 'automation_id', this.value)"
+
                                placeholder="用于自动化触发">
+
+                    </div>
+
                 </div>
+
             </div>
-        </div>
-    `).join('');
-}
+
+        `;
+
+        fragment.appendChild(entryElement);
+
+    });
+
+    entriesList.appendChild(fragment);
+
+    // 恢復收縮狀態
+    filteredEntries.forEach(entry => {
+        if (collapsedEntries.has(entry.id)) {
+            const entryElement = document.querySelector(`.worldbook-entry[data-id="${entry.id}"]`);
+            if (entryElement) {
+                const formElement = entryElement.querySelector('.entry-form');
+                const collapseIcon = entryElement.querySelector('.collapse-icon');
+                if (formElement && collapseIcon) {
+                    formElement.style.display = 'none';
+                    collapseIcon.textContent = '▶';
+                    entryElement.classList.add('collapsed');
+                }
+            }
+        }
+    });
+
 
 // 聚焦关键词输入框
 window.focusKeywordInput = function(entryId) {
@@ -1480,6 +1705,33 @@ window.updateEntryField = function (entryId, field, value) {
     const entry = characterData.character_book.entries.find(e => e.id === entryId);
     if (entry) {
         entry[field] = value;
+    }
+};
+
+// 收縮/展開條目
+window.toggleEntryCollapse = function (entryId) {
+    const entryElement = document.querySelector(`.worldbook-entry[data-id="${entryId}"]`);
+    if (!entryElement) return;
+    
+    const formElement = entryElement.querySelector('.entry-form');
+    const collapseIcon = entryElement.querySelector('.collapse-icon');
+    
+    if (!formElement || !collapseIcon) return;
+    
+    const isCollapsed = collapsedEntries.has(entryId);
+    
+    if (isCollapsed) {
+        // 展開
+        formElement.style.display = 'block';
+        collapseIcon.textContent = '▼';
+        entryElement.classList.remove('collapsed');
+        collapsedEntries.delete(entryId);
+    } else {
+        // 收縮
+        formElement.style.display = 'none';
+        collapseIcon.textContent = '▶';
+        entryElement.classList.add('collapsed');
+        collapsedEntries.add(entryId);
     }
 };
 
@@ -1845,25 +2097,70 @@ window.addEventListener('load', () => {
 });
 
 // 正则表达式编辑器功能
+console.log('=== 初始化正則表達式編輯器 ===');
 const regexEditorModal = document.getElementById('regexEditorModal');
+console.log('regexEditorModal 元素:', regexEditorModal);
 const closeRegexBtns = document.querySelectorAll('.close-regex');
+console.log('找到', closeRegexBtns.length, '個關閉按鈕');
 
-closeRegexBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-        regexEditorModal.style.display = 'none';
+if (regexEditorModal) {
+    console.log('✓ regexEditorModal 存在，正在初始化...');
+    
+    closeRegexBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            regexEditorModal.style.display = 'none';
+        });
     });
-});
 
-window.addEventListener('click', (e) => {
-    if (e.target === regexEditorModal) {
-        regexEditorModal.style.display = 'none';
-    }
-});
+    window.addEventListener('click', (e) => {
+        if (e.target === regexEditorModal) {
+            regexEditorModal.style.display = 'none';
+        }
+    });
 
-// 打开正则表达式编辑器
-window.openRegexEditor = function () {
-    regexEditorModal.style.display = 'block';
-};
+    // 打开正则表达式编辑器
+    window.openRegexEditor = function () {
+        console.log('openRegexEditor 被調用');
+        regexEditorModal.style.display = 'block';
+    };
+    
+    console.log('✓ openRegexEditor 函數已定義');
+} else {
+    console.error('✗ regexEditorModal 元素未找到！');
+    console.log('DOM 狀態:', document.readyState);
+    console.log('所有 modal 元素:', document.querySelectorAll('.modal').length);
+    
+    // 提供一個空函數避免錯誤
+    window.openRegexEditor = function () {
+        console.error('正則表達式編輯器未初始化');
+        alert('正則表達式編輯器未找到，請檢查頁面是否正確加載。\n\nDOM 狀態: ' + document.readyState);
+    };
+    
+    console.log('✓ 已定義備用 openRegexEditor 函數');
+}
+
+console.log('window.openRegexEditor 類型:', typeof window.openRegexEditor);
+
+// 為按鈕添加事件監聽器
+const openRegexEditorBtn = document.getElementById('openRegexEditorBtn');
+if (openRegexEditorBtn) {
+    console.log('✓ 找到 openRegexEditorBtn，添加事件監聽器');
+    openRegexEditorBtn.addEventListener('click', function() {
+        console.log('按鈕被點擊');
+        const modal = document.getElementById('regexEditorModal');
+        if (modal) {
+            console.log('打開模態框');
+            modal.style.display = 'block';
+        } else {
+            console.error('找不到 regexEditorModal 元素');
+            alert('正則表達式編輯器未找到');
+        }
+    });
+} else {
+    console.warn('✗ openRegexEditorBtn 按鈕未找到');
+}
+
+console.log('=== 正則表達式編輯器初始化完成 ===');
 
 // 测试正则表达式
 window.testRegex = function () {
@@ -1982,25 +2279,28 @@ const addRegexScriptBtn = document.getElementById('addRegexScriptBtn');
 const regexScriptsList = document.getElementById('regexScriptsList');
 const regexScriptCount = document.getElementById('regexScriptCount');
 
-regexScriptsBtn.addEventListener('click', () => {
-    regexScriptsModal.style.display = 'block';
-    renderRegexScripts();
-});
-
-closeRegexScriptsBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-        regexScriptsModal.style.display = 'none';
+if (regexScriptsBtn && regexScriptsModal) {
+    regexScriptsBtn.addEventListener('click', () => {
+        regexScriptsModal.style.display = 'block';
+        renderRegexScripts();
     });
-});
 
-window.addEventListener('click', (e) => {
-    if (e.target === regexScriptsModal) {
-        regexScriptsModal.style.display = 'none';
-    }
-});
+    closeRegexScriptsBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            regexScriptsModal.style.display = 'none';
+        });
+    });
+
+    window.addEventListener('click', (e) => {
+        if (e.target === regexScriptsModal) {
+            regexScriptsModal.style.display = 'none';
+        }
+    });
+}
 
 // 添加新脚本
-addRegexScriptBtn.addEventListener('click', () => {
+if (addRegexScriptBtn) {
+    addRegexScriptBtn.addEventListener('click', () => {
     const newScript = {
         id: crypto.randomUUID(),
         scriptName: '新脚本',
@@ -2022,7 +2322,8 @@ addRegexScriptBtn.addEventListener('click', () => {
 
     characterData.extensions.regex_scripts.push(newScript);
     renderRegexScripts();
-});
+    });
+}
 
 // 渲染正则脚本列表
 function renderRegexScripts() {
@@ -2235,3 +2536,4 @@ console.log('  exportBtn - 查看導出按鈕元素');
 console.log('  exportBtn.click() - 手動觸發點擊');
 
 // 折叠/展开功能已移至 character-editor.html 的内联 script 中
+}
