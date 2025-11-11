@@ -1198,6 +1198,16 @@ addEntryBtn.addEventListener('click', () => {
     }, 100);
 });
 
+// 世界书名称
+const lorebookNameInput = document.getElementById('lorebookName');
+
+if (lorebookNameInput) {
+    lorebookNameInput.addEventListener('input', (e) => {
+        if (!characterData.character_book) characterData.character_book = { entries: [] };
+        characterData.character_book.name = e.target.value;
+    });
+}
+
 // 搜索功能
 let searchTerm = '';
 const searchInput = document.getElementById('searchEntry');
@@ -1228,6 +1238,11 @@ function renderEntries() {
     entryCount.textContent = entries.length;
     if (enabledCountEl) {
         enabledCountEl.textContent = entries.filter(e => e.enabled).length;
+    }
+
+    // 更新世界书名称输入框
+    if (lorebookNameInput && characterData.character_book.name !== undefined) {
+        lorebookNameInput.value = characterData.character_book.name || '';
     }
 
     if (filteredEntries.length === 0) {
