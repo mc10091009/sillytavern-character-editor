@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>格式對比工具 - SillyTavern Format Comparison</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="theme-handler.js"></script>
+    <style>
+        .compare-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .upload-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .upload-box {
+            border: 2px dashed #667eea;
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(102, 126, 234, 0.05);
+        }
+        .upload-box:hover {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: #764ba2;
+        }
+        .upload-box.loaded {
+            border-color: #4ade80;
+            background: rgba(74, 222, 128, 0.1);
+        }
+        .comparison-result {
+            margin-top: 30px;
+            padding: 20px;
+            background: #1a1a1a;
+            border-radius: 12px;
+            border: 1px solid #2a2a2a;
+        }
+        body.light-theme .comparison-result {
+            background: #f5f5f5;
+            border-color: #e0e0e0;
+        }
+        .diff-item {
+            padding: 15px;
+            margin: 10px 0;
+            background: #2a2a2a;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        body.light-theme .diff-item {
+            background: #ffffff;
+            border-color: #667eea;
+        }
+        .diff-item.same {
+            border-left-color: #4ade80;
+        }
+        .diff-item.different {
+            border-left-color: #f87171;
+        }
+        .diff-item.missing {
+            border-left-color: #fbbf24;
+        }
+        .side-by-side {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .json-box {
+            background: #0d0d0d;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        body.light-theme .json-box {
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+        }
+        @media (max-width: 768px) {
+            .upload-section, .side-by-side {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="compare-container">
+        <h1>⚖️ 格式對比工具</h1>
+        <p style="color: #888; margin-bottom: 30px;">上傳兩個 PNG 文件進行對比分析</p>
+
+        <div class="upload-section">
+            <div class="upload-box" id="uploadBox1">
+                <div style="font-size: 36px; margin-bottom: 10px;">📄</div>
+                <h3>文件 1</h3>
+                <p style="color: #888;">點擊或拖放 PNG 文件</p>
+                <input type="file" id="fileInput1" accept=".png" style="display: none;">
+                <div id="fileName1" style="margin-top: 10px; color: #4ade80; display: none;"></div>
+            </div>
+
+            <div class="upload-box" id="uploadBox2">
+                <div style="font-size: 36px; margin-bottom: 10px;">📄</div>
+                <h3>文件 2</h3>
+                <p style="color: #888;">點擊或拖放 PNG 文件</p>
+                <input type="file" id="fileInput2" accept=".png" style="display: none;">
+                <div id="fileName2" style="margin-top: 10px; color: #4ade80; display: none;"></div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-bottom: 30px;">
+            <button class="btn btn-primary" id="compareBtn" disabled>🔍 開始對比</button>
+        </div>
+
+        <div id="results" style="display: none;">
+            <div class="comparison-result">
+                <h2>📊 對比結果</h2>
+                <div id="summary"></div>
+            </div>
+
+            <div class="comparison-result">
+                <h2>🔍 詳細差異</h2>
+                <div id="differences"></div>
+            </div>
+
+            <div class="comparison-result">
+                <h2>📝 完整數據對比</h2>
+                <div class="side-by-side">
+                    <div>
+                        <h3>文件 1</h3>
+                        <pre class="json-box" id="json1"></pre>
+                    </div>
+                    <div>
+                        <h3>文件 2</h3>
+                        <pre class="json-box" id="json2"></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let file1Data = null;
+        let file2Data = null;
+
+        // 設置上傳區域
+        setupUploadBox('uploadBox1', 'fileInput1', 'fileName1', 1);
+        setupUploadBox('uploadBox2', 'fileInput2', 'fileName2', 2);
+
+        function setupUploadBox(boxId, inputId, nameId, fileNum) {
+            const box = document.getElementById(boxId);
+            const input = document.getElementById(inputId);
+            const nameDisplay = document.getElementById(nameId);
+
+            box.addEventListener('click', () => input.click());
+
+            box.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                box.style.background = 'rgba(102, 126, 234, 0.2)';
+            });
+
+            box.addEventListener('dragleave', () => {
+                box.style.background = 'rgba(102, 126, 234, 0.05)';
+            });
+
+            box.addEventListener('drop', async (e) => {
+                e.preventDefault();
+                box.style.background = 'rgba(102, 126, 234, 0.05)';
+                const file = e.dataTransfer.files[0];
+                if (file && file.type === 'image/png') {
+                    await processFile(file, fileNum, box, nameDisplay);
+                }
+            });
+
+            input.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (file) await processFile(file, fileNum, box, nameDisplay);
+            });
+        }
+
+        async function processFile(file, fileNum, box, nameDisplay) {
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const uint8Array = new Uint8Array(arrayBuffer);
+                const data = await extractCharaData(uint8Array);
+
+                if (data) {
+                    if (fileNum === 1) file1Data = data;
+                    else file2Data = data;
+
+                    box.classList.add('loaded');
+                    nameDisplay.textContent = `✓ ${file.name}`;
+                    nameDisplay.style.display = 'block';
+
+                    if (file1Data && file2Data) {
+                        document.getElementById('compareBtn').disabled = false;
+                    }
+                } else {
+                    alert('❌ 無法從 PNG 中提取數據');
+                }
+            } catch (error) {
+                alert('❌ 處理文件時出錯: ' + error.message);
+            }
+        }
+
+        async function extractCharaData(pngData) {
+            const pngSignature = [137, 80, 78, 71, 13, 10, 26, 10];
+            for (let i = 0; i < 8; i++) {
+                if (pngData[i] !== pngSignature[i]) return null;
+            }
+
+            let i = 8;
+            while (i < pngData.length - 12) {
+                const view = new DataView(pngData.buffer, pngData.byteOffset + i);
+                const chunkLength = view.getUint32(0, false);
+                const chunkTypeBytes = pngData.slice(i + 4, i + 8);
+                const chunkType = String.fromCharCode(...chunkTypeBytes);
+
+                if (chunkType === 'tEXt') {
+                    const chunkData = pngData.slice(i + 8, i + 8 + chunkLength);
+                    const nullIndex = chunkData.indexOf(0);
+
+                    if (nullIndex !== -1) {
+                        const keywordBytes = chunkData.slice(0, nullIndex);
+                        const keyword = String.fromCharCode(...keywordBytes);
+
+                        if (keyword === 'chara') {
+                            const dataBytes = chunkData.slice(nullIndex + 1);
+                            let jsonString = '';
+                            for (let j = 0; j < dataBytes.length; j++) {
+                                jsonString += String.fromCharCode(dataBytes[j]);
+                            }
+
+                            try {
+                                const decoded = atob(jsonString.trim());
+                                const utf8Bytes = new Uint8Array(decoded.length);
+                                for (let j = 0; j < decoded.length; j++) {
+                                    utf8Bytes[j] = decoded.charCodeAt(j);
+                                }
+                                const utf8String = new TextDecoder('utf-8').decode(utf8Bytes);
+                                return JSON.parse(utf8String);
+                            } catch (e) {
+                                try {
+                                    return JSON.parse(jsonString);
+                                } catch (e2) {
+                                    return null;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                i += 12 + chunkLength;
+                if (chunkType === 'IEND') break;
+            }
+
+            return null;
+        }
+
+        document.getElementById('compareBtn').addEventListener('click', () => {
+            compareData();
+        });
+
+        function compareData() {
+            const data1 = file1Data.data || file1Data;
+            const data2 = file2Data.data || file2Data;
+
+            // 顯示結果
+            document.getElementById('results').style.display = 'block';
+
+            // 摘要
+            const summary = document.getElementById('summary');
+            const sameFields = [];
+            const differentFields = [];
+            const missingFields = [];
+
+            const allKeys = new Set([...Object.keys(data1), ...Object.keys(data2)]);
+
+            allKeys.forEach(key => {
+                if (!(key in data1)) {
+                    missingFields.push(`${key} (僅在文件2中)`);
+                } else if (!(key in data2)) {
+                    missingFields.push(`${key} (僅在文件1中)`);
+                } else if (JSON.stringify(data1[key]) === JSON.stringify(data2[key])) {
+                    sameFields.push(key);
+                } else {
+                    differentFields.push(key);
+                }
+            });
+
+            summary.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                    <div style="padding: 15px; background: rgba(74, 222, 128, 0.1); border-radius: 8px; border-left: 4px solid #4ade80;">
+                        <div style="font-size: 24px; font-weight: bold;">${sameFields.length}</div>
+                        <div>相同字段</div>
+                    </div>
+                    <div style="padding: 15px; background: rgba(248, 113, 113, 0.1); border-radius: 8px; border-left: 4px solid #f87171;">
+                        <div style="font-size: 24px; font-weight: bold;">${differentFields.length}</div>
+                        <div>不同字段</div>
+                    </div>
+                    <div style="padding: 15px; background: rgba(251, 191, 36, 0.1); border-radius: 8px; border-left: 4px solid #fbbf24;">
+                        <div style="font-size: 24px; font-weight: bold;">${missingFields.length}</div>
+                        <div>缺失字段</div>
+                    </div>
+                </div>
+            `;
+
+            // 詳細差異
+            const differences = document.getElementById('differences');
+            let diffHTML = '';
+
+            if (differentFields.length > 0) {
+                diffHTML += '<h3 style="color: #f87171;">不同的字段：</h3>';
+                differentFields.forEach(key => {
+                    diffHTML += `
+                        <div class="diff-item different">
+                            <strong>${key}</strong>
+                            <div style="margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                <div>
+                                    <div style="color: #888; font-size: 12px;">文件 1:</div>
+                                    <code>${JSON.stringify(data1[key]).substring(0, 100)}...</code>
+                                </div>
+                                <div>
+                                    <div style="color: #888; font-size: 12px;">文件 2:</div>
+                                    <code>${JSON.stringify(data2[key]).substring(0, 100)}...</code>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            if (missingFields.length > 0) {
+                diffHTML += '<h3 style="color: #fbbf24; margin-top: 20px;">缺失的字段：</h3>';
+                missingFields.forEach(field => {
+                    diffHTML += `<div class="diff-item missing">${field}</div>`;
+                });
+            }
+
+            if (sameFields.length > 0) {
+                diffHTML += '<h3 style="color: #4ade80; margin-top: 20px;">相同的字段：</h3>';
+                diffHTML += `<div class="diff-item same">${sameFields.join(', ')}</div>`;
+            }
+
+            differences.innerHTML = diffHTML;
+
+            // JSON 對比
+            document.getElementById('json1').textContent = JSON.stringify(data1, null, 2);
+            document.getElementById('json2').textContent = JSON.stringify(data2, null, 2);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PNG 測試工具 - SillyTavern Character Card Tester</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="theme-handler.js"></script>
+    <style>
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 12px;
+            padding: 60px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(102, 126, 234, 0.05);
+        }
+        .upload-area:hover {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: #764ba2;
+        }
+        .upload-area.dragover {
+            background: rgba(102, 126, 234, 0.2);
+            border-color: #764ba2;
+        }
+        .result-box {
+            margin-top: 30px;
+            padding: 20px;
+            background: #1a1a1a;
+            border-radius: 12px;
+            border: 1px solid #2a2a2a;
+        }
+        body.light-theme .result-box {
+            background: #f5f5f5;
+            border-color: #e0e0e0;
+        }
+        .json-viewer {
+            background: #0d0d0d;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        body.light-theme .json-viewer {
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+        }
+        .info-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: #2a2a2a;
+            border-radius: 6px;
+        }
+        body.light-theme .info-item {
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+        }
+        .success { color: #4ade80; }
+        .error { color: #f87171; }
+        .warning { color: #fbbf24; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔍 PNG 測試工具</h1>
+        <p style="color: #888; margin-bottom: 30px;">上傳 SillyTavern 角色卡 PNG 文件，分析其中的數據</p>
+
+        <div class="upload-area" id="uploadArea">
+            <div style="font-size: 48px; margin-bottom: 15px;">📤</div>
+            <h3>拖放 PNG 文件到這裡</h3>
+            <p style="color: #888;">或點擊選擇文件</p>
+            <input type="file" id="fileInput" accept=".png" style="display: none;">
+        </div>
+
+        <div id="results" style="display: none;">
+            <div class="result-box">
+                <h2>📊 分析結果</h2>
+                <div id="basicInfo"></div>
+            </div>
+
+            <div class="result-box">
+                <h2>📝 角色數據</h2>
+                <div id="characterData"></div>
+            </div>
+
+            <div class="result-box">
+                <h2>🔍 完整 JSON 數據</h2>
+                <button class="btn btn-secondary" onclick="copyJSON()" style="margin-bottom: 10px;">📋 複製 JSON</button>
+                <pre class="json-viewer" id="jsonViewer"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const results = document.getElementById('results');
+        let currentJSON = '';
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file && file.type === 'image/png') {
+                processFile(file);
+            } else {
+                alert('請上傳 PNG 文件');
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) processFile(file);
+        });
+
+        async function processFile(file) {
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const uint8Array = new Uint8Array(arrayBuffer);
+                const characterCard = await extractCharaData(uint8Array);
+
+                if (characterCard) {
+                    displayResults(characterCard, file);
+                } else {
+                    alert('❌ 無法從 PNG 中提取角色卡數據');
+                }
+            } catch (error) {
+                alert('❌ 處理文件時出錯: ' + error.message);
+                console.error(error);
+            }
+        }
+
+        async function extractCharaData(pngData) {
+            const pngSignature = [137, 80, 78, 71, 13, 10, 26, 10];
+            for (let i = 0; i < 8; i++) {
+                if (pngData[i] !== pngSignature[i]) return null;
+            }
+
+            let i = 8;
+            while (i < pngData.length - 12) {
+                const view = new DataView(pngData.buffer, pngData.byteOffset + i);
+                const chunkLength = view.getUint32(0, false);
+                const chunkTypeBytes = pngData.slice(i + 4, i + 8);
+                const chunkType = String.fromCharCode(...chunkTypeBytes);
+
+                if (chunkType === 'tEXt') {
+                    const chunkData = pngData.slice(i + 8, i + 8 + chunkLength);
+                    const nullIndex = chunkData.indexOf(0);
+
+                    if (nullIndex !== -1) {
+                        const keywordBytes = chunkData.slice(0, nullIndex);
+                        const keyword = String.fromCharCode(...keywordBytes);
+
+                        if (keyword === 'chara') {
+                            const dataBytes = chunkData.slice(nullIndex + 1);
+                            let jsonString = '';
+                            for (let j = 0; j < dataBytes.length; j++) {
+                                jsonString += String.fromCharCode(dataBytes[j]);
+                            }
+
+                            try {
+                                const decoded = atob(jsonString.trim());
+                                const utf8Bytes = new Uint8Array(decoded.length);
+                                for (let j = 0; j < decoded.length; j++) {
+                                    utf8Bytes[j] = decoded.charCodeAt(j);
+                                }
+                                const utf8String = new TextDecoder('utf-8').decode(utf8Bytes);
+                                return JSON.parse(utf8String);
+                            } catch (e) {
+                                try {
+                                    return JSON.parse(jsonString);
+                                } catch (e2) {
+                                    return null;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                i += 12 + chunkLength;
+                if (chunkType === 'IEND') break;
+            }
+
+            return null;
+        }
+
+        function displayResults(data, file) {
+            results.style.display = 'block';
+
+            // 基本信息
+            const basicInfo = document.getElementById('basicInfo');
+            basicInfo.innerHTML = `
+                <div class="info-item">
+                    <strong>文件名：</strong> ${file.name}
+                </div>
+                <div class="info-item">
+                    <strong>文件大小：</strong> ${(file.size / 1024).toFixed(2)} KB
+                </div>
+                <div class="info-item">
+                    <strong class="success">✓ 成功提取角色卡數據</strong>
+                </div>
+            `;
+
+            // 角色數據
+            const characterData = document.getElementById('characterData');
+            const char = data.data || data;
+            characterData.innerHTML = `
+                <div class="info-item">
+                    <strong>角色名稱：</strong> ${char.name || '未設置'}
+                </div>
+                <div class="info-item">
+                    <strong>描述：</strong> ${char.description ? char.description.substring(0, 100) + '...' : '未設置'}
+                </div>
+                <div class="info-item">
+                    <strong>個性：</strong> ${char.personality || '未設置'}
+                </div>
+                <div class="info-item">
+                    <strong>場景：</strong> ${char.scenario || '未設置'}
+                </div>
+                <div class="info-item">
+                    <strong>世界書條目：</strong> ${char.character_book?.entries?.length || 0} 個
+                </div>
+                <div class="info-item">
+                    <strong>備用開場白：</strong> ${char.alternate_greetings?.length || 0} 個
+                </div>
+            `;
+
+            // JSON 數據
+            currentJSON = JSON.stringify(data, null, 2);
+            document.getElementById('jsonViewer').textContent = currentJSON;
+        }
+
+        function copyJSON() {
+            navigator.clipboard.writeText(currentJSON).then(() => {
+                alert('✓ JSON 已複製到剪貼板');
+            });
+        }
+    </script>
+</body>
+</html>
