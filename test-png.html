@@ -13,10 +13,54 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #1a1a1a;
-            color: #e0e0e0;
+            background: #181818;
+            color: #e8e8e8;
             padding: 20px;
             line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body.light-theme {
+            background: #ffffff;
+            color: #1a1a1a;
+        }
+
+        /* 主题切换按钮 */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10001;
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            border-radius: 8px;
+            padding: 10px 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #e8e8e8;
+        }
+
+        body.light-theme .theme-toggle {
+            background: #f5f5f5;
+            border-color: #ddd;
+            color: #1a1a1a;
+        }
+
+        .theme-toggle:hover {
+            background: #333;
+            border-color: #444;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        body.light-theme .theme-toggle:hover {
+            background: #e8e8e8;
+            border-color: #ccc;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         .container {
@@ -28,14 +72,25 @@
             color: #4a9eff;
             margin-bottom: 20px;
             text-align: center;
+            transition: color 0.3s;
+        }
+
+        body.light-theme h1 {
+            color: #1976d2;
         }
 
         .upload-section {
-            background: #2a2a2a;
+            background: #202020;
             padding: 30px;
             border-radius: 8px;
             margin-bottom: 20px;
             text-align: center;
+            transition: background 0.3s;
+        }
+
+        body.light-theme .upload-section {
+            background: #f8f8f8;
+            border: 1px solid #e0e0e0;
         }
 
         .btn {
@@ -365,3 +420,5 @@
     </script>
 </body>
 </html>
+
+<script src="theme-handler.js"></script>

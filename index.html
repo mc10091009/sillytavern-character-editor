@@ -14,16 +14,26 @@
             left: 20px;
             z-index: 10000;
             cursor: pointer;
-            background: #222;
-            border: 1px solid #333;
+            background: #202020;
+            border: 1px solid #2a2a2a;
             border-radius: 8px;
             padding: 12px;
             transition: all 0.3s;
         }
 
+        body.light-theme .hamburger-menu {
+            background: #f5f5f5;
+            border-color: #ddd;
+        }
+
         .hamburger-menu:hover {
             background: #2a2a2a;
-            border-color: #444;
+            border-color: #3a3a3a;
+        }
+
+        body.light-theme .hamburger-menu:hover {
+            background: #e8e8e8;
+            border-color: #ccc;
         }
 
         .hamburger-icon {
@@ -38,9 +48,13 @@
         .hamburger-icon span {
             display: block;
             height: 3px;
-            background: #fff;
+            background: #f0f0f0;
             border-radius: 2px;
             transition: all 0.3s;
+        }
+
+        body.light-theme .hamburger-icon span {
+            background: #1a1a1a;
         }
 
         .hamburger-menu.active .hamburger-icon span:nth-child(1) {
@@ -62,12 +76,17 @@
             left: -300px;
             width: 300px;
             height: 100vh;
-            background: #1a1a1a;
-            border-right: 1px solid #333;
-            transition: left 0.3s;
+            background: #181818;
+            border-right: 1px solid #2a2a2a;
+            transition: left 0.3s, background 0.3s, border-color 0.3s;
             z-index: 9999;
             overflow-y: auto;
             padding: 80px 0 20px 0;
+        }
+
+        body.light-theme .sidebar {
+            background: #f8f8f8;
+            border-right-color: #e0e0e0;
         }
 
         .sidebar.active {
@@ -103,16 +122,32 @@
             gap: 12px;
         }
 
+        body.light-theme .menu-item {
+            color: #666;
+        }
+
         .menu-item:hover {
-            background: #222;
-            color: #fff;
+            background: #202020;
+            color: #f0f0f0;
             border-left-color: #666;
         }
 
+        body.light-theme .menu-item:hover {
+            background: #f0f0f0;
+            color: #1a1a1a;
+            border-left-color: #999;
+        }
+
         .menu-item.active {
-            background: #222;
-            color: #fff;
-            border-left-color: #fff;
+            background: #202020;
+            color: #f0f0f0;
+            border-left-color: #f0f0f0;
+        }
+
+        body.light-theme .menu-item.active {
+            background: #e8e8e8;
+            color: #1a1a1a;
+            border-left-color: #1a1a1a;
         }
 
         .menu-item-icon {
@@ -125,6 +160,11 @@
             font-size: 12px;
             text-transform: uppercase;
             letter-spacing: 1px;
+            transition: color 0.3s;
+        }
+
+        body.light-theme .menu-section {
+            color: #999;
         }
 
         /* 内容区域 */
@@ -155,8 +195,13 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: #1a1a1a;
+            background: #181818;
             z-index: 1;
+            transition: background 0.3s;
+        }
+
+        body.light-theme .page-content:not(#page-about) {
+            background: #ffffff;
         }
 
         /* 确保汉堡菜单和侧边栏在 iframe 之上 */
@@ -167,13 +212,19 @@
 
         /* 现代化首页样式 */
         .hero-modern {
-            background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+            background: linear-gradient(135deg, #202020 0%, #181818 100%);
             border-radius: 20px;
             padding: 80px 40px;
             margin-bottom: 60px;
-            border: 1px solid #333;
+            border: 1px solid #2a2a2a;
             position: relative;
             overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        body.light-theme .hero-modern {
+            background: linear-gradient(135deg, #f8f8f8 0%, #f0f0f0 100%);
+            border-color: #e0e0e0;
         }
 
         .hero-modern::before {
@@ -237,11 +288,23 @@
             letter-spacing: -1px;
         }
 
+        body.light-theme .hero-title {
+            background: linear-gradient(135deg, #1a1a1a 0%, #666666 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
         .hero-subtitle {
             font-size: 1.5em;
             color: #bbb;
             margin-bottom: 15px;
             font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        body.light-theme .hero-subtitle {
+            color: #555;
         }
 
         .hero-description {
@@ -250,6 +313,11 @@
             max-width: 700px;
             margin: 0 auto;
             line-height: 1.6;
+            transition: color 0.3s;
+        }
+
+        body.light-theme .hero-description {
+            color: #666;
         }
 
         .features-section {
@@ -258,10 +326,15 @@
 
         .section-title {
             font-size: 2em;
-            color: #ddd;
+            color: #e8e8e8;
             margin-bottom: 30px;
             font-weight: 600;
             text-align: center;
+            transition: color 0.3s;
+        }
+
+        body.light-theme .section-title {
+            color: #1a1a1a;
         }
 
         .tools-grid-modern {
@@ -271,14 +344,19 @@
         }
 
         .tool-card-modern {
-            background: linear-gradient(135deg, #252525 0%, #1f1f1f 100%);
-            border: 1px solid #333;
+            background: linear-gradient(135deg, #1c1c1c 0%, #181818 100%);
+            border: 1px solid #2a2a2a;
             border-radius: 16px;
             padding: 35px 30px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
             position: relative;
             overflow: hidden;
+        }
+
+        body.light-theme .tool-card-modern {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f8f8 100%);
+            border-color: #e0e0e0;
         }
 
         .tool-card-modern::before {
@@ -300,38 +378,65 @@
         .tool-card-modern:hover {
             transform: translateY(-8px);
             box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
-            border-color: #444;
-            background: linear-gradient(135deg, #2a2a2a 0%, #242424 100%);
+            border-color: #3a3a3a;
+            background: linear-gradient(135deg, #222222 0%, #1c1c1c 100%);
+        }
+
+        body.light-theme .tool-card-modern:hover {
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+            border-color: #d0d0d0;
+            background: linear-gradient(135deg, #fafafa 0%, #f0f0f0 100%);
         }
 
         .tool-card-modern.secondary {
-            background: linear-gradient(135deg, #222 0%, #1a1a1a 100%);
+            background: linear-gradient(135deg, #1a1a1a 0%, #151515 100%);
+        }
+
+        body.light-theme .tool-card-modern.secondary {
+            background: linear-gradient(135deg, #f8f8f8 0%, #f0f0f0 100%);
         }
 
         .tool-card-modern.secondary:hover {
-            background: linear-gradient(135deg, #272727 0%, #1f1f1f 100%);
+            background: linear-gradient(135deg, #202020 0%, #1a1a1a 100%);
+        }
+
+        body.light-theme .tool-card-modern.secondary:hover {
+            background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
         }
 
         .card-icon-wrapper {
             width: 70px;
             height: 70px;
-            background: linear-gradient(135deg, #333 0%, #2a2a2a 100%);
+            background: linear-gradient(135deg, #2a2a2a 0%, #202020 100%);
             border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
             margin-bottom: 20px;
-            border: 1px solid #444;
+            border: 1px solid #3a3a3a;
             transition: all 0.3s;
+        }
+
+        body.light-theme .card-icon-wrapper {
+            background: linear-gradient(135deg, #e8e8e8 0%, #e0e0e0 100%);
+            border-color: #d0d0d0;
         }
 
         .tool-card-modern:hover .card-icon-wrapper {
             transform: scale(1.1) rotate(5deg);
-            background: linear-gradient(135deg, #3a3a3a 0%, #333 100%);
+            background: linear-gradient(135deg, #303030 0%, #2a2a2a 100%);
+        }
+
+        body.light-theme .tool-card-modern:hover .card-icon-wrapper {
+            background: linear-gradient(135deg, #e0e0e0 0%, #d8d8d8 100%);
         }
 
         .card-icon-wrapper.secondary {
-            background: linear-gradient(135deg, #2a2a2a 0%, #222 100%);
+            background: linear-gradient(135deg, #202020 0%, #1a1a1a 100%);
+        }
+
+        body.light-theme .card-icon-wrapper.secondary {
+            background: linear-gradient(135deg, #f0f0f0 0%, #e8e8e8 100%);
         }
 
         .card-icon {
@@ -340,9 +445,14 @@
 
         .tool-card-modern h3 {
             font-size: 1.5em;
-            color: #fff;
+            color: #f0f0f0;
             margin-bottom: 15px;
             font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        body.light-theme .tool-card-modern h3 {
+            color: #1a1a1a;
         }
 
         .tool-card-modern p {
@@ -351,6 +461,11 @@
             font-size: 14px;
             margin-bottom: 20px;
             min-height: 60px;
+            transition: color 0.3s;
+        }
+
+        body.light-theme .tool-card-modern p {
+            color: #666;
         }
 
         .card-footer {
@@ -363,23 +478,41 @@
         .tool-badge-new {
             display: inline-block;
             padding: 6px 14px;
-            background: #2a2a2a;
+            background: #202020;
             border-radius: 20px;
             font-size: 12px;
             color: #888;
-            border: 1px solid #333;
+            border: 1px solid #2a2a2a;
             font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        body.light-theme .tool-badge-new {
+            background: #f0f0f0;
+            color: #666;
+            border-color: #d0d0d0;
         }
 
         .tool-badge-new.primary {
-            background: linear-gradient(135deg, #3a3a3a 0%, #2f2f2f 100%);
-            color: #bbb;
-            border-color: #444;
+            background: linear-gradient(135deg, #303030 0%, #252525 100%);
+            color: #c0c0c0;
+            border-color: #3a3a3a;
+        }
+
+        body.light-theme .tool-badge-new.primary {
+            background: linear-gradient(135deg, #e0e0e0 0%, #d8d8d8 100%);
+            color: #555;
+            border-color: #c0c0c0;
         }
 
         .tool-badge-new.secondary {
-            background: #252525;
+            background: #1c1c1c;
             color: #777;
+        }
+
+        body.light-theme .tool-badge-new.secondary {
+            background: #f5f5f5;
+            color: #888;
         }
 
         .card-arrow {
@@ -388,15 +521,28 @@
             transition: all 0.3s;
         }
 
+        body.light-theme .card-arrow {
+            color: #999;
+        }
+
         .tool-card-modern:hover .card-arrow {
             color: #888;
             transform: translateX(5px);
         }
 
+        body.light-theme .tool-card-modern:hover .card-arrow {
+            color: #555;
+        }
+
         .footer-modern {
             margin-top: 80px;
             padding: 40px 0;
-            border-top: 1px solid #333;
+            border-top: 1px solid #2a2a2a;
+            transition: border-color 0.3s;
+        }
+
+        body.light-theme .footer-modern {
+            border-top-color: #e0e0e0;
         }
 
         .footer-content {
@@ -407,6 +553,11 @@
             color: #777;
             font-size: 14px;
             margin-bottom: 20px;
+            transition: color 0.3s;
+        }
+
+        body.light-theme .footer-main {
+            color: #666;
         }
 
         .footer-links {
@@ -426,8 +577,16 @@
             gap: 5px;
         }
 
+        body.light-theme .footer-links a {
+            color: #666;
+        }
+
         .footer-links a:hover {
-            color: #bbb;
+            color: #c0c0c0;
+        }
+
+        body.light-theme .footer-links a:hover {
+            color: #1a1a1a;
         }
 
         /* 响应式 */
@@ -477,6 +636,12 @@
             <span></span>
         </div>
     </div>
+
+    <!-- 主题切换按钮 -->
+    <button class="theme-toggle" id="themeToggle">
+        <span id="themeIcon">🌙</span>
+        <span id="themeText">夜間模式</span>
+    </button>
 
     <!-- 侧边栏遮罩 -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
@@ -718,6 +883,51 @@
 
         // 页面加载完成后隐藏返回按钮
         window.addEventListener('load', hideIframeBackButtons);
+
+        // 主题切换功能
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const themeText = document.getElementById('themeText');
+
+        // 从 localStorage 读取主题设置
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        if (savedTheme === 'light') {
+            document.body.classList.add('light-theme');
+            themeIcon.textContent = '☀️';
+            themeText.textContent = '亮色模式';
+        } else {
+            themeIcon.textContent = '🌙';
+            themeText.textContent = '夜間模式';
+        }
+
+        // 切换主题
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('light-theme');
+            const isLight = document.body.classList.contains('light-theme');
+
+            if (isLight) {
+                themeIcon.textContent = '☀️';
+                themeText.textContent = '亮色模式';
+                localStorage.setItem('theme', 'light');
+            } else {
+                themeIcon.textContent = '🌙';
+                themeText.textContent = '夜間模式';
+                localStorage.setItem('theme', 'dark');
+            }
+
+            // 通知所有 iframe 更新主题
+            const iframes = document.querySelectorAll('iframe');
+            iframes.forEach(iframe => {
+                try {
+                    iframe.contentWindow.postMessage({
+                        type: 'theme-change',
+                        theme: isLight ? 'light' : 'dark'
+                    }, '*');
+                } catch (e) {
+                    // 忽略跨域错误
+                }
+            });
+        });
     </script>
 </body>
 

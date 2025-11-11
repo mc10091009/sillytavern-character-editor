@@ -162,18 +162,18 @@ function renderAlternateGreetings() {
     console.log('渲染备用开场白，数量:', greetings.length);
 
     if (greetings.length === 0) {
-        container.innerHTML = '<div style="color: #888888; text-align: center; padding: 20px; background: #2a2a2a; border-radius: 6px; border: 1px dashed #444;">暂无备用开场白<br><span style="font-size: 12px; color: #666;">点击上方按钮添加</span></div>';
+        container.innerHTML = '<div class="empty-greeting">暂无备用开场白<br><span class="empty-greeting-hint">点击上方按钮添加</span></div>';
         return;
     }
 
     const html = greetings.map((greeting, index) => {
         const escapedGreeting = greeting.replace(/</g, '&lt;').replace(/>/g, '&gt;');
         return `
-        <div style="display: flex; gap: 10px; align-items: flex-start; margin-bottom: 10px;">
-            <div style="flex: 1;">
-                <div style="font-size: 12px; color: #aaa; margin-bottom: 5px;">备用开场白 #${index + 1}</div>
+        <div class="greeting-item">
+            <div class="greeting-content">
+                <div class="greeting-label">备用开场白 #${index + 1}</div>
                 <textarea rows="3" 
-                          style="width: 100%; padding: 10px; background: #2a2a2a; border: 1px solid #444; border-radius: 6px; color: #fff; font-size: 14px; resize: vertical; font-family: inherit;"
+                          class="greeting-textarea"
                           onchange="updateAlternateGreeting(${index}, this.value)">${escapedGreeting}</textarea>
             </div>
             <button type="button" class="btn-small btn-delete" onclick="removeAlternateGreeting(${index})" 
@@ -1892,29 +1892,29 @@ window.testRegex = function () {
 
         if (matches && matches.length > 0) {
             resultText.innerHTML = `
-                <div style="color: #4CAF50; font-weight: 600; margin-bottom: 10px;">
+                <div class="regex-success">
                     ✓ 匹配成功！找到 ${matches.length} 个匹配项
                 </div>
-                <div style="background: white; padding: 10px; border-radius: 5px; margin-top: 10px;">
+                <div class="regex-result-box">
                     <strong>匹配的内容：</strong>
-                    <ul style="margin: 10px 0; padding-left: 20px;">
-                        ${matches.map(m => `<li><code style="background: #fffacd; padding: 2px 6px; border-radius: 3px;">${m}</code></li>`).join('')}
+                    <ul class="regex-match-list">
+                        ${matches.map(m => `<li><code class="regex-match-code">${m}</code></li>`).join('')}
                     </ul>
                 </div>
-                <div style="background: white; padding: 10px; border-radius: 5px; margin-top: 10px;">
+                <div class="regex-result-box">
                     <strong>高亮显示：</strong>
-                    <div style="margin-top: 10px; line-height: 1.8;">
-                        ${testText.replace(regex, match => `<span style="background: #ffeb3b; padding: 2px 4px; border-radius: 3px; font-weight: 600;">${match}</span>`)}
+                    <div class="regex-highlight-text">
+                        ${testText.replace(regex, match => `<span class="regex-highlight">${match}</span>`)}
                     </div>
                 </div>
             `;
         } else {
             resultText.innerHTML = `
-                <div style="color: #f44336; font-weight: 600;">
+                <div class="regex-error">
                     ✗ 没有找到匹配项
                 </div>
-                <div style="margin-top: 10px; color: #666;">
-                    正则表达式 <code style="background: #f0f0f0; padding: 2px 6px; border-radius: 3px;">${pattern}</code> 
+                <div class="regex-error-text">
+                    正则表达式 <code class="regex-pattern-code">${pattern}</code> 
                     在测试文本中没有找到匹配的内容。
                 </div>
             `;
@@ -1922,13 +1922,13 @@ window.testRegex = function () {
     } catch (e) {
         resultDiv.style.display = 'block';
         resultText.innerHTML = `
-            <div style="color: #f44336; font-weight: 600;">
+            <div class="regex-error">
                 ✗ 正则表达式错误
             </div>
-            <div style="margin-top: 10px; color: #666;">
+            <div class="regex-error-text">
                 ${e.message}
             </div>
-            <div style="margin-top: 10px; padding: 10px; background: #fff3cd; border-radius: 5px; font-size: 13px;">
+            <div class="regex-hint">
                 <strong>提示：</strong>请检查正则表达式语法是否正确。
             </div>
         `;
@@ -2086,54 +2086,54 @@ function renderRegexScripts() {
                     <div class="help-text">在替换之前，全局修剪正则表达式匹配中的任何不需要的部分</div>
                 </div>
                 
-                <div style="margin: 20px 0; padding: 15px; background: #f5f5f5; border-radius: 8px;">
-                    <strong style="display: block; margin-bottom: 10px;">影响模组</strong>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                        <label style="display: flex; align-items: center;">
+                <div class="checkbox-group">
+                    <strong class="checkbox-group-title">影响模组</strong>
+                    <div class="checkbox-grid">
+                        <label class="checkbox-label">
                             <input type="checkbox" ${(script.placement || []).includes(0) ? 'checked' : ''} 
                                    onchange="togglePlacement('${script.id}', 0, this.checked)">
-                            <span style="margin-left: 8px;">使用者输入</span>
+                            <span>使用者输入</span>
                         </label>
-                        <label style="display: flex; align-items: center;">
+                        <label class="checkbox-label">
                             <input type="checkbox" ${(script.placement || []).includes(1) ? 'checked' : ''} 
                                    onchange="togglePlacement('${script.id}', 1, this.checked)">
-                            <span style="margin-left: 8px;">AI 输出</span>
+                            <span>AI 输出</span>
                         </label>
-                        <label style="display: flex; align-items: center;">
+                        <label class="checkbox-label">
                             <input type="checkbox" ${(script.placement || []).includes(2) ? 'checked' : ''} 
                                    onchange="togglePlacement('${script.id}', 2, this.checked)">
-                            <span style="margin-left: 8px;">封锁命令</span>
+                            <span>封锁命令</span>
                         </label>
-                        <label style="display: flex; align-items: center;">
+                        <label class="checkbox-label">
                             <input type="checkbox" ${(script.placement || []).includes(3) ? 'checked' : ''} 
                                    onchange="togglePlacement('${script.id}', 3, this.checked)">
-                            <span style="margin-left: 8px;">世界资讯</span>
+                            <span>世界资讯</span>
                         </label>
-                        <label style="display: flex; align-items: center;">
+                        <label class="checkbox-label">
                             <input type="checkbox" ${(script.placement || []).includes(4) ? 'checked' : ''} 
                                    onchange="togglePlacement('${script.id}', 4, this.checked)">
-                            <span style="margin-left: 8px;">推理</span>
+                            <span>推理</span>
                         </label>
                     </div>
                 </div>
                 
-                <div style="margin: 20px 0; padding: 15px; background: #f5f5f5; border-radius: 8px;">
-                    <strong style="display: block; margin-bottom: 10px;">其他选项</strong>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                        <label style="display: flex; align-items: center;">
+                <div class="checkbox-group">
+                    <strong class="checkbox-group-title">其他选项</strong>
+                    <div class="checkbox-grid">
+                        <label class="checkbox-label">
                             <input type="checkbox" ${script.runOnEdit ? 'checked' : ''} 
                                    onchange="updateRegexScriptField('${script.id}', 'runOnEdit', this.checked)">
-                            <span style="margin-left: 8px;">编辑时执行</span>
+                            <span>编辑时执行</span>
                         </label>
-                        <label style="display: flex; align-items: center;">
+                        <label class="checkbox-label">
                             <input type="checkbox" ${script.promptOnly ? 'checked' : ''} 
                                    onchange="updateRegexScriptField('${script.id}', 'promptOnly', this.checked)">
-                            <span style="margin-left: 8px;">仅修改最终提示</span>
+                            <span>仅修改最终提示</span>
                         </label>
-                        <label style="display: flex; align-items: center;">
+                        <label class="checkbox-label">
                             <input type="checkbox" ${script.markdownOnly ? 'checked' : ''} 
                                    onchange="updateRegexScriptField('${script.id}', 'markdownOnly', this.checked)">
-                            <span style="margin-left: 8px;">仅修改系统提示词</span>
+                            <span>仅修改系统提示词</span>
                         </label>
                     </div>
                 </div>

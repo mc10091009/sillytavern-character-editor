@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>正則腳本編輯器 - SillyTavern Regex Scripts</title>
     <link rel="stylesheet" href="style.css">
+    <script src="theme-handler.js"></script>
     <style>
         .regex-header {
             display: flex;
@@ -12,27 +13,43 @@
             align-items: center;
             margin-bottom: 30px;
             padding: 25px;
-            background: #222222;
+            background: #202020;
             border-radius: 12px;
-            border: 1px solid #333333;
+            border: 1px solid #2a2a2a;
+            transition: background 0.3s, border-color 0.3s;
+        }
+
+        body.light-theme .regex-header {
+            background: #ffffff;
+            border-color: #d0d0d0;
         }
 
         .regex-info h1 {
             font-size: 2em;
-            color: #ffffff;
+            color: #f5f5f5;
             margin-bottom: 10px;
+            transition: color 0.3s;
+        }
+
+        body.light-theme .regex-info h1 {
+            color: #111111;
         }
 
         .regex-info p {
-            color: #888;
+            color: #aaaaaa;
             font-size: 14px;
+            transition: color 0.3s;
+        }
+
+        body.light-theme .regex-info p {
+            color: #555555;
         }
 
         .back-link {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            color: #888;
+            color: #bbbbbb;
             text-decoration: none;
             margin-bottom: 20px;
             padding: 8px 12px;
@@ -40,23 +57,43 @@
             transition: all 0.2s;
         }
 
+        body.light-theme .back-link {
+            color: #444444;
+        }
+
         .back-link:hover {
-            color: #fff;
+            color: #ffffff;
             background: #2a2a2a;
         }
 
+        body.light-theme .back-link:hover {
+            color: #000000;
+            background: #e0e0e0;
+        }
+
         .test-panel {
-            background: #222222;
-            border: 1px solid #333333;
+            background: #202020;
+            border: 1px solid #2a2a2a;
             border-radius: 12px;
             padding: 25px;
             margin-bottom: 30px;
+            transition: background 0.3s, border-color 0.3s;
+        }
+
+        body.light-theme .test-panel {
+            background: #ffffff;
+            border-color: #d0d0d0;
         }
 
         .test-panel h3 {
-            color: #d0d0d0;
+            color: #f0f0f0;
             margin-bottom: 20px;
             font-size: 1.3em;
+            transition: color 0.3s;
+        }
+
+        body.light-theme .test-panel h3 {
+            color: #1a1a1a;
         }
 
         .test-row {
@@ -67,26 +104,39 @@
         }
 
         .test-output {
-            background: #1a1a1a;
+            background: #151515;
             padding: 15px;
             border-radius: 8px;
-            border: 1px solid #333;
+            border: 1px solid #2a2a2a;
             min-height: 100px;
             color: #e0e0e0;
             white-space: pre-wrap;
             font-family: 'Courier New', monospace;
             font-size: 13px;
+            transition: background 0.3s, border-color 0.3s, color 0.3s;
+        }
+
+        body.light-theme .test-output {
+            background: #ffffff;
+            border-color: #d0d0d0;
+            color: #1a1a1a;
         }
 
         .stats-bar {
             display: flex;
             gap: 20px;
             padding: 20px;
-            background: #1a1a1a;
+            background: #1c1c1c;
             border-radius: 8px;
             margin-bottom: 25px;
-            border: 1px solid #333333;
+            border: 1px solid #2a2a2a;
             flex-wrap: wrap;
+            transition: background 0.3s, border-color 0.3s;
+        }
+
+        body.light-theme .stats-bar {
+            background: #ffffff;
+            border-color: #d0d0d0;
         }
 
         .stat-item {
@@ -106,15 +156,25 @@
 
         .stat-label {
             font-size: 11px;
-            color: #888;
+            color: #aaaaaa;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            transition: color 0.3s;
+        }
+
+        body.light-theme .stat-label {
+            color: #555555;
         }
 
         .stat-value {
             font-size: 20px;
             font-weight: 600;
-            color: #fff;
+            color: #ffffff;
+            transition: color 0.3s;
+        }
+
+        body.light-theme .stat-value {
+            color: #111111;
         }
     </style>
 </head>

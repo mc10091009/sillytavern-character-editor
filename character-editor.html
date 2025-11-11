@@ -6,15 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#1a1a1a">
+    <meta name="theme-color" content="#181818">
     <title>SillyTavern 角色卡编辑器</title>
     <link rel="stylesheet" href="style.css">
+    <script src="theme-handler.js"></script>
 </head>
 
 <body>
     <div class="container">
-        <a href="./index.html" id="backToHome"
-            style="display: inline-flex; align-items: center; gap: 8px; color: #888; text-decoration: none; margin-bottom: 20px; padding: 8px 12px; border-radius: 6px; transition: all 0.2s;">
+        <a href="./index.html" id="backToHome" class="back-link">
             ← 返回主頁
         </a>
         <header>
@@ -88,8 +88,8 @@
                                 <span class="toggle-icon">▼</span> 创作者的中继资料（不会与 AI 提示词一起传送）
                             </label>
                             <div class="collapsible-content">
-                                <div style="margin-bottom: 15px; padding: 12px; background: #1a1a1a; border-radius: 6px; border-left: 3px solid #555;">
-                                    <p style="color: #888; font-size: 13px;">此处所有内容均为选填。这些信息不会与 AI 提示词一起传送，仅用于角色卡的管理和说明。</p>
+                                <div class="info-box">
+                                    <p>此处所有内容均为选填。这些信息不会与 AI 提示词一起传送，仅用于角色卡的管理和说明。</p>
                                 </div>
 
                                 <div class="form-group">
@@ -214,27 +214,25 @@
             </div>
             <div class="modal-body">
                 <!-- 世界书名称 -->
-                <div style="margin-bottom: 20px;">
-                    <label style="display: block; font-size: 13px; color: #aaa; margin-bottom: 8px; font-weight: 500;">📚 世界书名称</label>
-                    <input type="text" id="lorebookName" placeholder="为这个世界书命名..." 
-                           style="width: 100%; background: #1a1a1a; border: 1px solid #333; padding: 12px 15px; border-radius: 8px; color: #fff; font-size: 15px;">
-                    <div style="font-size: 12px; color: #666; margin-top: 6px;">可选：给世界书起一个有意义的名字，方便识别</div>
+                <div class="form-group">
+                    <label>📚 世界书名称</label>
+                    <input type="text" id="lorebookName" placeholder="为这个世界书命名...">
+                    <div class="help-text">可选：给世界书起一个有意义的名字，方便识别</div>
                 </div>
 
                 <!-- 搜索和控制栏 -->
-                <div class="worldbook-controls" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; gap: 15px; flex-wrap: wrap;">
-                    <input type="text" id="searchEntry" placeholder="🔍 搜索条目（关键词、内容、备注）..." 
-                           style="flex: 1; min-width: 250px; background: #222; border: 1px solid #333; padding: 12px 15px; border-radius: 8px; color: #fff; font-size: 14px;">
+                <div class="worldbook-controls">
+                    <input type="text" id="searchEntry" class="search-input" placeholder="🔍 搜索条目（关键词、内容、备注）...">
                     <button id="addEntryBtn" class="btn btn-primary" style="white-space: nowrap;">➕ 添加条目</button>
-                    <div class="worldbook-info" style="color: #999; font-size: 14px;">
-                        <span>共 <strong id="entryCount" style="color: #fff;">0</strong> 个条目 | 已启用 <strong id="enabledCount" style="color: #4CAF50;">0</strong></span>
+                    <div class="worldbook-info">
+                        <span>共 <strong id="entryCount" class="count-number">0</strong> 个条目 | 已启用 <strong id="enabledCount" class="count-enabled">0</strong></span>
                     </div>
                 </div>
 
                 <div id="entriesList" class="entries-list">
                     <div class="empty-state">
-                        <p style="font-size: 48px; margin-bottom: 15px;">📚</p>
-                        <p style="font-size: 18px; font-weight: 600;">暂无世界书条目</p>
+                        <p class="empty-icon">📚</p>
+                        <p class="empty-title">暂无世界书条目</p>
                         <p class="hint">点击「添加条目」开始创建你的世界设定</p>
                     </div>
                 </div>
@@ -260,8 +258,7 @@
                     </div>
                 </div>
 
-                <div
-                    style="margin-bottom: 20px; padding: 15px; background: #e3f2fd; border-radius: 8px; font-size: 14px;">
+                <div class="info-callout">
                     <strong>💡 什么是正则脚本？</strong><br>
                     正则脚本可以在发送给 AI 之前自动查找和替换文本内容。<br>
                     例如：隐藏状态栏、替换特定标记、格式化文本等。
@@ -315,10 +312,10 @@
                     <button class="btn btn-primary" onclick="testRegex()">🧪 测试匹配</button>
                 </div>
 
-                <div id="regexResult" style="display: none; margin-top: 20px;">
-                    <div style="padding: 15px; border-radius: 8px; background: #f0f0f0;">
+                <div id="regexResult" class="regex-result-container" style="display: none;">
+                    <div class="regex-result-wrapper">
                         <strong>测试结果：</strong>
-                        <div id="regexResultText" style="margin-top: 10px;"></div>
+                        <div id="regexResultText"></div>
                     </div>
                 </div>
 
