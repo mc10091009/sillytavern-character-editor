@@ -1143,10 +1143,6 @@ clearBtn.addEventListener('click', () => {
 
 // 世界书功能
 worldBookBtn.addEventListener('click', () => {
-    console.log('打开世界书模态框');
-    console.log('searchEntry元素:', document.getElementById('searchEntry'));
-    console.log('addEntryBtn元素:', addEntryBtn);
-    console.log('entriesList元素:', entriesList);
     worldBookModal.style.display = 'block';
     renderEntries();
 });
@@ -1205,6 +1201,8 @@ addEntryBtn.addEventListener('click', () => {
 // 搜索功能
 let searchTerm = '';
 const searchInput = document.getElementById('searchEntry');
+const enabledCountEl = document.getElementById('enabledCount');
+
 if (searchInput) {
     searchInput.addEventListener('input', (e) => {
         searchTerm = e.target.value.toLowerCase();
@@ -1212,38 +1210,8 @@ if (searchInput) {
     });
 }
 
-// 世界书元数据
-const lorebookNameInput = document.getElementById('lorebookName');
-const scanDepthInput = document.getElementById('scanDepth');
-const tokenBudgetInput = document.getElementById('tokenBudget');
-const enabledCountEl = document.getElementById('enabledCount');
-
-if (lorebookNameInput) {
-    lorebookNameInput.addEventListener('input', (e) => {
-        if (!characterData.character_book) characterData.character_book = { entries: [] };
-        characterData.character_book.name = e.target.value;
-    });
-}
-
-if (scanDepthInput) {
-    scanDepthInput.addEventListener('input', (e) => {
-        if (!characterData.character_book) characterData.character_book = { entries: [] };
-        characterData.character_book.scan_depth = parseInt(e.target.value) || 100;
-    });
-}
-
-if (tokenBudgetInput) {
-    tokenBudgetInput.addEventListener('input', (e) => {
-        if (!characterData.character_book) characterData.character_book = { entries: [] };
-        characterData.character_book.token_budget = parseInt(e.target.value) || 2048;
-    });
-}
-
 // 渲染条目列表
 function renderEntries() {
-    console.log('renderEntries 被调用');
-    console.log('条目数量:', characterData.character_book.entries.length);
-    
     const entries = characterData.character_book.entries;
     
     // 过滤搜索
@@ -1260,17 +1228,6 @@ function renderEntries() {
     entryCount.textContent = entries.length;
     if (enabledCountEl) {
         enabledCountEl.textContent = entries.filter(e => e.enabled).length;
-    }
-
-    // 更新元数据输入框
-    if (lorebookNameInput && characterData.character_book.name) {
-        lorebookNameInput.value = characterData.character_book.name;
-    }
-    if (scanDepthInput && characterData.character_book.scan_depth) {
-        scanDepthInput.value = characterData.character_book.scan_depth;
-    }
-    if (tokenBudgetInput && characterData.character_book.token_budget) {
-        tokenBudgetInput.value = characterData.character_book.token_budget;
     }
 
     if (filteredEntries.length === 0) {
