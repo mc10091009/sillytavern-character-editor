@@ -7,166 +7,718 @@
     <title>SillyTavern 工具集</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        .hero {
-            text-align: center;
-            padding: 60px 20px;
-            background: linear-gradient(135deg, #222222 0%, #1a1a1a 100%);
-            border-radius: 16px;
-            margin-bottom: 50px;
-            border: 1px solid #333333;
+        /* 汉堡菜单样式 */
+        .hamburger-menu {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 10000;
+            cursor: pointer;
+            background: #222;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 12px;
+            transition: all 0.3s;
         }
 
-        .hero h1 {
+        .hamburger-menu:hover {
+            background: #2a2a2a;
+            border-color: #444;
+        }
+
+        .hamburger-icon {
+            width: 24px;
+            height: 20px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .hamburger-icon span {
+            display: block;
+            height: 3px;
+            background: #fff;
+            border-radius: 2px;
+            transition: all 0.3s;
+        }
+
+        .hamburger-menu.active .hamburger-icon span:nth-child(1) {
+            transform: rotate(45deg) translate(7px, 7px);
+        }
+
+        .hamburger-menu.active .hamburger-icon span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger-menu.active .hamburger-icon span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -7px);
+        }
+
+        /* 侧边栏菜单 */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -300px;
+            width: 300px;
+            height: 100vh;
+            background: #1a1a1a;
+            border-right: 1px solid #333;
+            transition: left 0.3s;
+            z-index: 9999;
+            overflow-y: auto;
+            padding: 80px 0 20px 0;
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9998;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .sidebar-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .menu-item {
+            padding: 15px 25px;
+            color: #999;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .menu-item:hover {
+            background: #222;
+            color: #fff;
+            border-left-color: #666;
+        }
+
+        .menu-item.active {
+            background: #222;
+            color: #fff;
+            border-left-color: #fff;
+        }
+
+        .menu-item-icon {
+            font-size: 20px;
+        }
+
+        .menu-section {
+            padding: 20px 25px 10px 25px;
+            color: #666;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* 内容区域 */
+        .content-wrapper {
+            transition: margin-left 0.3s;
+        }
+
+        .page-content {
+            display: none;
+        }
+
+        .page-content.active {
+            display: block;
+        }
+
+        /* iframe 页面样式 */
+        .page-content iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .page-content:not(#page-about) {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #1a1a1a;
+            z-index: 1;
+        }
+
+        /* 确保汉堡菜单和侧边栏在 iframe 之上 */
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        /* 现代化首页样式 */
+        .hero-modern {
+            background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+            border-radius: 20px;
+            padding: 80px 40px;
+            margin-bottom: 60px;
+            border: 1px solid #333;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-modern::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.03) 0%, transparent 70%);
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 0.5;
+            }
+
+            50% {
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+        }
+
+        .hero-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            display: inline-block;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .hero-title {
             font-size: 3.5em;
+            font-weight: 700;
             margin-bottom: 15px;
-            background: linear-gradient(135deg, #ffffff 0%, #cccccc 100%);
+            background: linear-gradient(135deg, #ffffff 0%, #aaaaaa 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            letter-spacing: -1px;
         }
 
-        .hero p {
-            font-size: 1.2em;
-            color: #999;
-            max-width: 600px;
+        .hero-subtitle {
+            font-size: 1.5em;
+            color: #bbb;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .hero-description {
+            font-size: 1.1em;
+            color: #888;
+            max-width: 700px;
             margin: 0 auto;
+            line-height: 1.6;
         }
 
-        .tools-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 30px;
-            margin-top: 40px;
+        .features-section {
+            margin-bottom: 60px;
         }
 
-        .tool-card {
-            background: #222222;
-            border: 1px solid #333333;
-            border-radius: 16px;
-            padding: 40px 35px;
+        .section-title {
+            font-size: 2em;
+            color: #ddd;
+            margin-bottom: 30px;
+            font-weight: 600;
             text-align: center;
-            transition: all 0.3s;
+        }
+
+        .tools-grid-modern {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .tool-card-modern {
+            background: linear-gradient(135deg, #252525 0%, #1f1f1f 100%);
+            border: 1px solid #333;
+            border-radius: 16px;
+            padding: 35px 30px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
-            text-decoration: none;
-            display: block;
+            position: relative;
+            overflow: hidden;
         }
 
-        .tool-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
-            border-color: #444444;
+        .tool-card-modern::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #4a4a4a, #666);
+            transform: scaleX(0);
+            transition: transform 0.3s;
         }
 
-        .tool-icon {
-            font-size: 64px;
+        .tool-card-modern:hover::before {
+            transform: scaleX(1);
+        }
+
+        .tool-card-modern:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+            border-color: #444;
+            background: linear-gradient(135deg, #2a2a2a 0%, #242424 100%);
+        }
+
+        .tool-card-modern.secondary {
+            background: linear-gradient(135deg, #222 0%, #1a1a1a 100%);
+        }
+
+        .tool-card-modern.secondary:hover {
+            background: linear-gradient(135deg, #272727 0%, #1f1f1f 100%);
+        }
+
+        .card-icon-wrapper {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #333 0%, #2a2a2a 100%);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             margin-bottom: 20px;
-            display: block;
-            pointer-events: none;
+            border: 1px solid #444;
+            transition: all 0.3s;
         }
 
-        .tool-card h2 {
-            color: #ffffff;
-            font-size: 1.8em;
+        .tool-card-modern:hover .card-icon-wrapper {
+            transform: scale(1.1) rotate(5deg);
+            background: linear-gradient(135deg, #3a3a3a 0%, #333 100%);
+        }
+
+        .card-icon-wrapper.secondary {
+            background: linear-gradient(135deg, #2a2a2a 0%, #222 100%);
+        }
+
+        .card-icon {
+            font-size: 36px;
+        }
+
+        .tool-card-modern h3 {
+            font-size: 1.5em;
+            color: #fff;
             margin-bottom: 15px;
             font-weight: 600;
-            pointer-events: none;
         }
 
-        .tool-card p {
+        .tool-card-modern p {
             color: #999;
             line-height: 1.7;
-            font-size: 15px;
-            pointer-events: none;
+            font-size: 14px;
+            margin-bottom: 20px;
+            min-height: 60px;
         }
 
-        .tool-badge {
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+        }
+
+        .tool-badge-new {
             display: inline-block;
             padding: 6px 14px;
             background: #2a2a2a;
             border-radius: 20px;
             font-size: 12px;
             color: #888;
-            margin-top: 15px;
             border: 1px solid #333;
-            pointer-events: none;
+            font-weight: 500;
         }
 
-        .footer {
-            text-align: center;
-            margin-top: 60px;
-            padding: 30px;
-            color: #666;
-            font-size: 14px;
+        .tool-badge-new.primary {
+            background: linear-gradient(135deg, #3a3a3a 0%, #2f2f2f 100%);
+            color: #bbb;
+            border-color: #444;
+        }
+
+        .tool-badge-new.secondary {
+            background: #252525;
+            color: #777;
+        }
+
+        .card-arrow {
+            font-size: 24px;
+            color: #555;
+            transition: all 0.3s;
+        }
+
+        .tool-card-modern:hover .card-arrow {
+            color: #888;
+            transform: translateX(5px);
+        }
+
+        .footer-modern {
+            margin-top: 80px;
+            padding: 40px 0;
             border-top: 1px solid #333;
         }
 
-        .footer a {
+        .footer-content {
+            text-align: center;
+        }
+
+        .footer-main {
+            color: #777;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
             color: #888;
             text-decoration: none;
             transition: color 0.2s;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
 
-        .footer a:hover {
-            color: #fff;
+        .footer-links a:hover {
+            color: #bbb;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .hero-modern {
+                padding: 50px 25px;
+            }
+
+            .hero-icon {
+                font-size: 60px;
+            }
+
+            .hero-title {
+                font-size: 2.5em;
+            }
+
+            .hero-subtitle {
+                font-size: 1.2em;
+            }
+
+            .hero-description {
+                font-size: 1em;
+            }
+
+            .section-title {
+                font-size: 1.6em;
+            }
+
+            .tools-grid-modern {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 15px;
+            }
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
-        <div class="hero">
-            <h1>🎭 SillyTavern 工具集</h1>
-            <p>為 SillyTavern 用戶打造的完整編輯工具套件</p>
-        </div>
-
-        <div class="tools-grid">
-            <a href="character-editor.html" class="tool-card">
-                <span class="tool-icon">🎭</span>
-                <h2>角色卡編輯器</h2>
-                <p>創建和編輯 SillyTavern 角色卡，支持 V1/V2/V3 格式，包含完整的角色信息、世界書和正則腳本</p>
-                <span class="tool-badge">主要工具</span>
-            </a>
-
-            <a href="lorebook.html" class="tool-card">
-                <span class="tool-icon">📚</span>
-                <h2>世界書編輯器</h2>
-                <p>獨立編輯世界書（Lorebook），管理觸發關鍵詞和內容，支持導入/導出 JSON 格式</p>
-                <span class="tool-badge">獨立工具</span>
-            </a>
-
-            <a href="regex.html" class="tool-card">
-                <span class="tool-icon">🔧</span>
-                <h2>正則腳本編輯器</h2>
-                <p>創建和管理正則表達式腳本，用於文本替換和格式化，支持測試和預覽</p>
-                <span class="tool-badge">獨立工具</span>
-            </a>
-        </div>
-
-        <div class="tools-grid" style="margin-top: 30px;">
-            <a href="test-png.html" class="tool-card" style="opacity: 0.8;">
-                <span class="tool-icon">🔍</span>
-                <h2>PNG 測試工具</h2>
-                <p>分析和驗證角色卡 PNG 文件的內容，檢查數據完整性</p>
-                <span class="tool-badge">調試工具</span>
-            </a>
-
-            <a href="compare-format.html" class="tool-card" style="opacity: 0.8;">
-                <span class="tool-icon">⚖️</span>
-                <h2>格式對比工具</h2>
-                <p>對比兩個角色卡 PNG 文件的格式差異，幫助排查問題</p>
-                <span class="tool-badge">調試工具</span>
-            </a>
-        </div>
-
-        <div class="footer">
-            <p>開源項目 · 使用 Cooperative Non-Commercial License (Co-op NCL) 授權</p>
-            <p style="margin-top: 10px;">
-                <a href="README.md">使用說明</a> ·
-                <a href="CONTRIBUTING.md">貢獻指南</a> ·
-                <a href="LICENSE">授權條款</a>
-            </p>
+    <!-- 汉堡菜单按钮 -->
+    <div class="hamburger-menu" id="hamburgerMenu">
+        <div class="hamburger-icon">
+            <span></span>
+            <span></span>
+            <span></span>
         </div>
     </div>
+
+    <!-- 侧边栏遮罩 -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- 侧边栏菜单 -->
+    <div class="sidebar" id="sidebar">
+        <div class="menu-section">主要工具</div>
+        <div class="menu-item active" data-page="character-editor">
+            <span class="menu-item-icon">🎭</span>
+            <span>角色卡編輯器</span>
+        </div>
+        <div class="menu-item" data-page="lorebook">
+            <span class="menu-item-icon">📚</span>
+            <span>世界書編輯器</span>
+        </div>
+        <div class="menu-item" data-page="regex">
+            <span class="menu-item-icon">🔧</span>
+            <span>正則腳本編輯器</span>
+        </div>
+
+        <div class="menu-section">調試工具</div>
+        <div class="menu-item" data-page="test-png">
+            <span class="menu-item-icon">🔍</span>
+            <span>PNG 測試工具</span>
+        </div>
+        <div class="menu-item" data-page="compare-format">
+            <span class="menu-item-icon">⚖️</span>
+            <span>格式對比工具</span>
+        </div>
+
+        <div class="menu-section">其他</div>
+        <div class="menu-item" data-page="about">
+            <span class="menu-item-icon">ℹ️</span>
+            <span>關於工具集</span>
+        </div>
+    </div>
+
+    <!-- 内容区域 -->
+    <div class="content-wrapper">
+        <!-- 角色卡编辑器（默认首页） -->
+        <div class="page-content active" id="page-character-editor">
+            <iframe src="character-editor.html" style="width: 100%; height: 100vh; border: none;"></iframe>
+        </div>
+
+        <!-- 世界书编辑器 -->
+        <div class="page-content" id="page-lorebook">
+            <iframe src="lorebook.html" style="width: 100%; height: 100vh; border: none;"></iframe>
+        </div>
+
+        <!-- 正则脚本编辑器 -->
+        <div class="page-content" id="page-regex">
+            <iframe src="regex.html" style="width: 100%; height: 100vh; border: none;"></iframe>
+        </div>
+
+        <!-- PNG 测试工具 -->
+        <div class="page-content" id="page-test-png">
+            <iframe src="test-png.html" style="width: 100%; height: 100vh; border: none;"></iframe>
+        </div>
+
+        <!-- 格式对比工具 -->
+        <div class="page-content" id="page-compare-format">
+            <iframe src="compare-format.html" style="width: 100%; height: 100vh; border: none;"></iframe>
+        </div>
+
+        <!-- 关于页面 -->
+        <div class="page-content" id="page-about">
+            <div class="container">
+                <div class="hero-modern">
+                    <div class="hero-content">
+                        <div class="hero-icon">🎭</div>
+                        <h1 class="hero-title">SillyTavern 工具集</h1>
+                        <p class="hero-subtitle">專業的角色卡編輯與管理平台</p>
+                        <p class="hero-description">為 SillyTavern 用戶打造的完整編輯工具套件，支持角色卡、世界書、正則腳本等多種格式</p>
+                    </div>
+                </div>
+
+                <div class="features-section">
+                    <h2 class="section-title">✨ 核心功能</h2>
+                    <div class="tools-grid-modern">
+                        <div class="tool-card-modern" data-page="character-editor">
+                            <div class="card-icon-wrapper">
+                                <span class="card-icon">🎭</span>
+                            </div>
+                            <h3>角色卡編輯器</h3>
+                            <p>創建和編輯 SillyTavern 角色卡，支持 V1/V2/V3 格式，包含完整的角色信息、世界書和正則腳本</p>
+                            <div class="card-footer">
+                                <span class="tool-badge-new primary">主要工具</span>
+                                <span class="card-arrow">→</span>
+                            </div>
+                        </div>
+
+                        <div class="tool-card-modern" data-page="lorebook">
+                            <div class="card-icon-wrapper">
+                                <span class="card-icon">📚</span>
+                            </div>
+                            <h3>世界書編輯器</h3>
+                            <p>獨立編輯世界書（Lorebook），管理觸發關鍵詞和內容，支持導入/導出 JSON 格式</p>
+                            <div class="card-footer">
+                                <span class="tool-badge-new">獨立工具</span>
+                                <span class="card-arrow">→</span>
+                            </div>
+                        </div>
+
+                        <div class="tool-card-modern" data-page="regex">
+                            <div class="card-icon-wrapper">
+                                <span class="card-icon">🔧</span>
+                            </div>
+                            <h3>正則腳本編輯器</h3>
+                            <p>創建和管理正則表達式腳本，用於文本替換和格式化，支持測試和預覽</p>
+                            <div class="card-footer">
+                                <span class="tool-badge-new">獨立工具</span>
+                                <span class="card-arrow">→</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="features-section">
+                    <h2 class="section-title">🔧 調試工具</h2>
+                    <div class="tools-grid-modern">
+                        <div class="tool-card-modern secondary" data-page="test-png">
+                            <div class="card-icon-wrapper secondary">
+                                <span class="card-icon">🔍</span>
+                            </div>
+                            <h3>PNG 測試工具</h3>
+                            <p>分析和驗證角色卡 PNG 文件的內容，檢查數據完整性</p>
+                            <div class="card-footer">
+                                <span class="tool-badge-new secondary">調試工具</span>
+                                <span class="card-arrow">→</span>
+                            </div>
+                        </div>
+
+                        <div class="tool-card-modern secondary" data-page="compare-format">
+                            <div class="card-icon-wrapper secondary">
+                                <span class="card-icon">⚖️</span>
+                            </div>
+                            <h3>格式對比工具</h3>
+                            <p>對比兩個角色卡 PNG 文件的格式差異，幫助排查問題</p>
+                            <div class="card-footer">
+                                <span class="tool-badge-new secondary">調試工具</span>
+                                <span class="card-arrow">→</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="footer-modern">
+                    <div class="footer-content">
+                        <p class="footer-main">開源項目 · Cooperative Non-Commercial License (Co-op NCL)</p>
+                        <div class="footer-links">
+                            <a href="README.md">📖 使用說明</a>
+                            <a href="CONTRIBUTING.md">🤝 貢獻指南</a>
+                            <a href="LICENSE">📄 授權條款</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 汉堡菜单功能
+        const hamburgerMenu = document.getElementById('hamburgerMenu');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const menuItems = document.querySelectorAll('.menu-item');
+        const pageContents = document.querySelectorAll('.page-content');
+
+        // 切换菜单
+        function toggleMenu() {
+            hamburgerMenu.classList.toggle('active');
+            sidebar.classList.toggle('active');
+            sidebarOverlay.classList.toggle('active');
+        }
+
+        hamburgerMenu.addEventListener('click', toggleMenu);
+        sidebarOverlay.addEventListener('click', toggleMenu);
+
+        // 切换页面
+        function switchPage(pageName) {
+            // 更新菜单项状态
+            menuItems.forEach(mi => mi.classList.remove('active'));
+            const activeMenuItem = document.querySelector(`.menu-item[data-page="${pageName}"]`);
+            if (activeMenuItem) {
+                activeMenuItem.classList.add('active');
+            }
+
+            // 切换页面内容
+            pageContents.forEach(pc => pc.classList.remove('active'));
+            const targetPage = document.getElementById(`page-${pageName}`);
+            if (targetPage) {
+                targetPage.classList.add('active');
+            }
+
+            // 关闭菜单
+            if (sidebar.classList.contains('active')) {
+                toggleMenu();
+            }
+        }
+
+        // 菜单项点击
+        menuItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const pageName = item.getAttribute('data-page');
+                switchPage(pageName);
+            });
+        });
+
+        // 关于页面工具卡片点击
+        document.addEventListener('click', (e) => {
+            const card = e.target.closest('.tool-card-modern');
+            if (card && card.hasAttribute('data-page')) {
+                const pageName = card.getAttribute('data-page');
+                switchPage(pageName);
+            }
+        });
+
+        // 隐藏 iframe 中的返回按钮
+        function hideIframeBackButtons() {
+            const iframes = document.querySelectorAll('iframe');
+            iframes.forEach(iframe => {
+                try {
+                    iframe.addEventListener('load', () => {
+                        try {
+                            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                            const backLink = iframeDoc.querySelector('a[href*="index.html"]');
+                            if (backLink) {
+                                backLink.style.display = 'none';
+                            }
+                        } catch (e) {
+                            // 跨域限制，忽略
+                        }
+                    });
+                } catch (e) {
+                    // 忽略错误
+                }
+            });
+        }
+
+        // 页面加载完成后隐藏返回按钮
+        window.addEventListener('load', hideIframeBackButtons);
+    </script>
 </body>
 
 </html>

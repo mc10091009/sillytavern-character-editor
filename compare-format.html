@@ -55,9 +55,18 @@
 </head>
 <body>
     <div class="container">
-        <a href="./index.html" style="display: inline-block; color: #888; text-decoration: none; margin-bottom: 20px; padding: 8px 12px; border-radius: 6px; transition: all 0.2s;">
+        <a href="./index.html" id="backToHome" style="display: inline-block; color: #888; text-decoration: none; margin-bottom: 20px; padding: 8px 12px; border-radius: 6px; transition: all 0.2s;">
             ← 返回主頁
         </a>
+        
+        <script>
+            // 如果在 iframe 中，隐藏返回主页链接
+            if (window.self !== window.top) {
+                const backLink = document.getElementById('backToHome');
+                if (backLink) backLink.style.display = 'none';
+            }
+        </script>
+        
         <h1>🔍 SillyTavern 格式對比工具</h1>
         <p>上傳兩個 PNG 文件進行對比：</p>
         <div>

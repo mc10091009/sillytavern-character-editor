@@ -157,9 +157,17 @@
 </head>
 <body>
     <div class="container">
-        <a href="./index.html" class="back-link">
+        <a href="./index.html" class="back-link" id="backToHome">
             ← 返回主頁
         </a>
+
+        <script>
+            // 如果在 iframe 中，隐藏返回主页链接
+            if (window.self !== window.top) {
+                const backLink = document.getElementById('backToHome');
+                if (backLink) backLink.style.display = 'none';
+            }
+        </script>
 
         <div class="lorebook-header">
             <div class="lorebook-info">

@@ -768,3 +768,142 @@ h2 {
 }
 
 
+
+/* 折叠区域样式 */
+.collapsible-section {
+    border: 1px solid #333333;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #2a2a2a;
+    margin-bottom: 15px;
+}
+
+.collapsible-header {
+    cursor: pointer;
+    padding: 14px 16px;
+    background: #2a2a2a;
+    border: none;
+    width: 100%;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.2s;
+    margin-bottom: 0;
+    user-select: none;
+}
+
+.collapsible-header:hover {
+    background: #333333;
+}
+
+.toggle-icon {
+    display: inline-block;
+    transition: transform 0.3s ease;
+    font-size: 12px;
+    color: #888888;
+}
+
+.collapsible-section.collapsed .toggle-icon {
+    transform: rotate(-90deg);
+}
+
+.collapsible-content {
+    padding: 0 16px 16px 16px;
+    transition: all 0.3s ease;
+    max-height: 5000px;
+    overflow: hidden;
+}
+
+.collapsible-section.collapsed .collapsible-content {
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    opacity: 0;
+}
+
+.collapsible-content textarea {
+    margin-top: 10px;
+}
+
+/* 主要折叠区域样式 */
+.major-section {
+    border: 2px solid #3a3a3a;
+    background: #252525;
+}
+
+.major-section > .collapsible-header {
+    background: #2a2a2a;
+    padding: 16px 18px;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.major-section > .collapsible-header:hover {
+    background: #333333;
+}
+
+.major-section > .collapsible-content {
+    padding: 20px;
+    background: #222222;
+    max-height: 5000px;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.major-section.collapsed > .collapsible-content {
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    opacity: 0;
+}
+
+.major-section .form-group {
+    margin-bottom: 20px;
+}
+
+.major-section .form-group:last-child {
+    margin-bottom: 0;
+}
+
+/* 子折叠区域样式 */
+.sub-section {
+    border: 1px solid #3a3a3a;
+    background: #1a1a1a;
+    margin-top: 20px;
+}
+
+.sub-section .collapsible-header {
+    background: #252525;
+    padding: 14px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #aaa;
+}
+
+.sub-section .collapsible-header:hover {
+    background: #2a2a2a;
+}
+
+.sub-section .collapsible-content {
+    padding: 16px;
+    background: #1a1a1a;
+    max-height: 3000px;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.sub-section.collapsed .collapsible-content {
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    opacity: 0;
+}
+
+.sub-section .form-group {
+    margin-bottom: 15px;
+}
+
+.sub-section .form-group:last-child {
+    margin-bottom: 0;
+}

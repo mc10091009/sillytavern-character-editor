@@ -13,13 +13,23 @@
 
 <body>
     <div class="container">
-        <a href="./index.html"
+        <a href="./index.html" id="backToHome"
             style="display: inline-flex; align-items: center; gap: 8px; color: #888; text-decoration: none; margin-bottom: 20px; padding: 8px 12px; border-radius: 6px; transition: all 0.2s;">
             ← 返回主頁
         </a>
         <header>
             <h1>🎭 SillyTavern 角色卡编辑器</h1>
         </header>
+        
+        <script>
+            // 如果在 iframe 中，隐藏返回主页链接
+            if (window.self !== window.top) {
+                const backLink = document.getElementById('backToHome');
+                if (backLink) {
+                    backLink.style.display = 'none';
+                }
+            }
+        </script>
 
         <div class="main-content">
             <div class="editor-panel">
@@ -32,17 +42,7 @@
 
                 <div class="form-group">
                     <label for="description">角色描述</label>
-                    <textarea id="description" rows="4" placeholder="简短描述角色的外观和特征"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="personality">性格特点</label>
-                    <textarea id="personality" rows="4" placeholder="描述角色的性格、行为方式"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="scenario">场景设定</label>
-                    <textarea id="scenario" rows="4" placeholder="角色所处的场景或背景故事"></textarea>
+                    <textarea id="description" rows="4"></textarea>
                 </div>
 
                 <div class="form-group">
@@ -60,10 +60,84 @@
                     <div class="help-text">提供多个不同的开场白选项</div>
                 </div>
 
-                <div class="form-group">
-                    <label for="mes_example">对话示例</label>
-                    <textarea id="mes_example" rows="6"
-                        placeholder="{{user}}: 你好！&#10;{{char}}: 你好呀！很高兴见到你。"></textarea>
+                <!-- 进阶定义 -->
+                <div class="form-group collapsible-section major-section">
+                    <label class="collapsible-header" onclick="toggleSection(this, event)">
+                        <span class="toggle-icon">▼</span> 进阶定义
+                    </label>
+                    <div class="collapsible-content">
+                        <div class="form-group">
+                            <label for="personality">性格特点</label>
+                            <textarea id="personality" rows="4" placeholder="描述角色的性格、行为方式"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="scenario">场景设定</label>
+                            <textarea id="scenario" rows="4" placeholder="角色所处的场景或背景故事"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="mes_example">对话示例</label>
+                            <textarea id="mes_example" rows="6"
+                                placeholder="{{user}}: 你好！&#10;{{char}}: 你好呀！很高兴见到你。"></textarea>
+                        </div>
+
+                        <!-- 创作者的中继资料 -->
+                        <div class="form-group collapsible-section sub-section">
+                            <label class="collapsible-header" onclick="toggleSection(this, event)">
+                                <span class="toggle-icon">▼</span> 创作者的中继资料（不会与 AI 提示词一起传送）
+                            </label>
+                            <div class="collapsible-content">
+                                <div style="margin-bottom: 15px; padding: 12px; background: #1a1a1a; border-radius: 6px; border-left: 3px solid #555;">
+                                    <p style="color: #888; font-size: 13px;">此处所有内容均为选填。这些信息不会与 AI 提示词一起传送，仅用于角色卡的管理和说明。</p>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="creator">创建者</label>
+                                    <input type="text" id="creator" placeholder="角色卡创建者名称">
+                                    <div class="help-text">标注角色卡的创建者</div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="character_version">角色版本</label>
+                                    <input type="text" id="character_version" placeholder="例如：1.0, v2.5">
+                                    <div class="help-text">角色卡的版本号</div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="tags">标签</label>
+                                    <input type="text" id="tags" placeholder="用逗号分隔，例如：奇幻, 女性, 魔法师">
+                                    <div class="help-text">用于分类和搜索角色</div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="creator_notes">创建者备注</label>
+                                    <textarea id="creator_notes" rows="3" placeholder="给其他用户的备注说明，例如使用建议、角色背景等"></textarea>
+                                    <div class="help-text">对角色卡的额外说明</div>
+                                </div>
+
+                                <div class="form-group collapsible-section">
+                                    <label for="system_prompt" class="collapsible-header" onclick="toggleSection(this, event)">
+                                        <span class="toggle-icon">▼</span> 系统提示词
+                                    </label>
+                                    <div class="collapsible-content">
+                                        <textarea id="system_prompt" rows="4" placeholder="自定义系统提示词，会在对话开始时发送给 AI"></textarea>
+                                        <div class="help-text">高级功能：自定义 AI 的行为方式</div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group collapsible-section">
+                                    <label for="post_history_instructions" class="collapsible-header" onclick="toggleSection(this, event)">
+                                        <span class="toggle-icon">▼</span> 历史后指令
+                                    </label>
+                                    <div class="collapsible-content">
+                                        <textarea id="post_history_instructions" rows="3" placeholder="在对话历史之后插入的指令"></textarea>
+                                        <div class="help-text">高级功能：在每次回复前插入的额外指令</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -75,11 +149,6 @@
                 <div class="form-group">
                     <button id="worldBookBtn" class="btn btn-secondary" style="width: 100%; margin-bottom: 10px;">📚
                         编辑世界书</button>
-                </div>
-
-                <div class="form-group">
-                    <button id="advancedBtn" class="btn btn-secondary" style="width: 100%; margin-bottom: 10px;">⚙️
-                        高级设置</button>
                 </div>
 
                 <div class="form-group">
@@ -273,64 +342,31 @@
         </div>
     </div>
 
-    <!-- 高级设置模态框 -->
-    <div id="advancedModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>⚙️ 高级设置</h2>
-                <span class="close close-advanced">&times;</span>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label for="creator">创建者</label>
-                    <input type="text" id="creator" placeholder="角色卡创建者名称">
-                    <div class="help-text">可选：标注角色卡的创建者</div>
-                </div>
 
-                <div class="form-group">
-                    <label for="character_version">角色版本</label>
-                    <input type="text" id="character_version" placeholder="例如：1.0, v2.5">
-                    <div class="help-text">可选：角色卡的版本号</div>
-                </div>
-
-                <div class="form-group">
-                    <label for="tags">标签</label>
-                    <input type="text" id="tags" placeholder="用逗号分隔，例如：奇幻, 女性, 魔法师">
-                    <div class="help-text">用于分类和搜索角色</div>
-                </div>
-
-                <div class="form-group">
-                    <label for="creator_notes">创建者备注</label>
-                    <textarea id="creator_notes" rows="3" placeholder="给其他用户的备注说明，例如使用建议、角色背景等"></textarea>
-                    <div class="help-text">对角色卡的额外说明</div>
-                </div>
-
-                <div class="form-group">
-                    <label for="system_prompt">系统提示词</label>
-                    <textarea id="system_prompt" rows="4" placeholder="自定义系统提示词，会在对话开始时发送给 AI"></textarea>
-                    <div class="help-text">高级功能：自定义 AI 的行为方式</div>
-                </div>
-
-                <div class="form-group">
-                    <label for="post_history_instructions">历史后指令</label>
-                    <textarea id="post_history_instructions" rows="3" placeholder="在对话历史之后插入的指令"></textarea>
-                    <div class="help-text">高级功能：在每次回复前插入的额外指令</div>
-                </div>
-
-                <div class="form-group">
-                    <label for="alternate_greetings">备用开场白</label>
-                    <textarea id="alternate_greetings" rows="6"
-                        placeholder="输入多个备用开场白，用 --- 分隔&#10;例如：&#10;你好！今天天气真好。&#10;---&#10;嗨！很高兴见到你！"></textarea>
-                    <div class="help-text">提供多个不同的开场白选项，用 --- 分隔</div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button id="closeAdvancedBtn" class="btn btn-secondary">关闭</button>
-            </div>
-        </div>
-    </div>
 
     <script>
+        // 折叠/展开功能 - 必须在 HTML 解析前定义
+        window.toggleSection = function(headerElement, event) {
+            console.log('toggleSection 被调用', headerElement);
+            
+            // 阻止事件冒泡，避免嵌套折叠区域互相干扰
+            if (event) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+            
+            const section = headerElement.closest('.collapsible-section');
+            console.log('找到的 section:', section);
+            
+            if (section) {
+                const wasCollapsed = section.classList.contains('collapsed');
+                section.classList.toggle('collapsed');
+                console.log('切换状态:', wasCollapsed ? '展开' : '收起');
+            } else {
+                console.error('未找到 .collapsible-section 父元素');
+            }
+        };
+        
         // 確保 DOM 完全加載後再執行
         console.log('=== character-editor.html 初始化 ===');
         console.log('DOM 加載狀態:', document.readyState);
@@ -341,12 +377,22 @@
             console.log('DOMContentLoaded 事件觸發');
             const criticalElements = [
                 'name', 'exportBtn', 'exportJsonBtn', 'importBtn', 
-                'worldBookBtn', 'advancedBtn', 'previewName'
+                'worldBookBtn', 'previewName'
             ];
             
             criticalElements.forEach(id => {
                 const element = document.getElementById(id);
                 console.log(`元素 #${id}:`, element ? '✓ 存在' : '✗ 不存在');
+            });
+            
+            // 页面加载时，默认折叠所有可折叠区域
+            console.log('=== 初始化折叠区域 ===');
+            const collapsibleSections = document.querySelectorAll('.collapsible-section');
+            console.log('找到', collapsibleSections.length, '个折叠区域');
+            
+            collapsibleSections.forEach((section, index) => {
+                section.classList.add('collapsed');
+                console.log(`区域 ${index + 1} 已设置为折叠状态`);
             });
         });
         

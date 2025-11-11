@@ -73,7 +73,6 @@ const importBtn = document.getElementById('importBtn');
 const clearBtn = document.getElementById('clearBtn');
 const importFile = document.getElementById('importFile');
 const worldBookBtn = document.getElementById('worldBookBtn');
-const advancedBtn = document.getElementById('advancedBtn');
 const saveLocalBtn = document.getElementById('saveLocalBtn');
 const loadLocalBtn = document.getElementById('loadLocalBtn');
 
@@ -84,7 +83,6 @@ console.log('exportJsonBtn:', exportJsonBtn ? '✓ 找到' : '✗ 未找到');
 console.log('importBtn:', importBtn ? '✓ 找到' : '✗ 未找到');
 console.log('clearBtn:', clearBtn ? '✓ 找到' : '✗ 未找到');
 console.log('worldBookBtn:', worldBookBtn ? '✓ 找到' : '✗ 未找到');
-console.log('advancedBtn:', advancedBtn ? '✓ 找到' : '✗ 未找到');
 console.log('saveLocalBtn:', saveLocalBtn ? '✓ 找到' : '✗ 未找到');
 console.log('loadLocalBtn:', loadLocalBtn ? '✓ 找到' : '✗ 未找到');
 
@@ -93,17 +91,13 @@ if (!exportBtn || !exportJsonBtn || !importBtn || !clearBtn) {
     console.error('這可能導致按鈕無法點擊。請檢查 HTML 中的元素 ID 是否正確。');
 }
 
-// 高级设置相关元素
-const advancedModal = document.getElementById('advancedModal');
-const closeAdvancedBtn = document.querySelector('.close-advanced');
-const closeAdvancedFooterBtn = document.getElementById('closeAdvancedBtn');
+// 高级设置相关元素（已整合到进阶定义中）
 const creatorInput = document.getElementById('creator');
 const creatorNotesInput = document.getElementById('creator_notes');
 const systemPromptInput = document.getElementById('system_prompt');
 const postHistoryInput = document.getElementById('post_history_instructions');
 const characterVersionInput = document.getElementById('character_version');
 const tagsInput = document.getElementById('tags');
-const alternateGreetingsInput = document.getElementById('alternate_greetings');
 
 // 世界书相关元素
 const worldBookModal = document.getElementById('worldBookModal');
@@ -121,7 +115,7 @@ function updatePreview() {
     previewScenario.textContent = characterData.scenario || '暂无场景设定';
 
     if (characterData.avatar) {
-        previewAvatar.innerHTML = `<img src="${characterData.avatar}" alt="角色头像">`;
+        previewAvatar.innerHTML = `<img src="${characterData.avatar}" alt="角色头像" style="width: 100%; height: 100%; object-fit: contain;">`;
     } else {
         previewAvatar.innerHTML = '<span class="placeholder-text">暂无头像</span>';
     }
@@ -220,7 +214,7 @@ avatarInput.addEventListener('change', (e) => {
         const reader = new FileReader();
         reader.onload = (event) => {
             characterData.avatar = event.target.result;
-            avatarPreview.innerHTML = `<img src="${characterData.avatar}" alt="头像预览">`;
+            avatarPreview.innerHTML = `<img src="${characterData.avatar}" alt="头像预览" style="max-width: 100%; height: auto; border-radius: 8px;">`;
             updatePreview();
         };
         reader.readAsDataURL(file);
@@ -846,9 +840,9 @@ importFile.addEventListener('change', async (e) => {
                         tagsInput.value = (characterData.tags || []).join(', ');
                         console.log('✓ 标签:', (characterData.tags || []).join(', ') || '无');
                     }
-                    if (alternateGreetingsInput) {
-                        const greetings = characterData.alternate_greetings || [];
-                        alternateGreetingsInput.value = greetings.join('\n---\n');
+                    // 备用开场白通过 alternateGreetingsList 管理
+                    const greetings = characterData.alternate_greetings || [];
+                    if (greetings.length > 0) {
                         console.log('✓ 备用开场白已设置:', greetings.length, '个');
                         if (greetings.length > 0) {
                             console.log('  第一个备用开场白预览:', greetings[0].substring(0, 50) + '...');
@@ -860,19 +854,19 @@ importFile.addEventListener('change', async (e) => {
                     console.warn('设置高级表单值时出错（可能是元素不存在）:', e);
                 }
 
-                // 设置头像
+                // 设置头像 - PNG 文件本身就是头像
                 try {
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
+                    // 将 PNG 文件转换为 Data URL 用作头像
+                    const avatarReader = new FileReader();
+                    avatarReader.onload = (event) => {
                         characterData.avatar = event.target.result;
                         if (avatarPreview) {
-                            avatarPreview.innerHTML = `<img src="${characterData.avatar}" alt="头像预览">`;
+                            avatarPreview.innerHTML = `<img src="${characterData.avatar}" alt="头像预览" style="max-width: 100%; height: auto; border-radius: 8px;">`;
                         }
                         updatePreview();
+                        console.log('✓ 头像已从 PNG 文件加载');
                     };
-                    reader.readAsDataURL(file);
-
-                    console.log('✓ 头像已设置');
+                    avatarReader.readAsDataURL(file);
                 } catch (e) {
                     console.warn('设置头像时出错:', e);
                 }
@@ -1142,7 +1136,6 @@ clearBtn.addEventListener('click', () => {
         if (postHistoryInput) postHistoryInput.value = '';
         if (characterVersionInput) characterVersionInput.value = '';
         if (tagsInput) tagsInput.value = '';
-        if (alternateGreetingsInput) alternateGreetingsInput.value = '';
 
         updatePreview();
     }
@@ -1321,32 +1314,7 @@ window.deleteEntry = function (entryId) {
     }
 };
 
-// 高级设置功能
-if (advancedBtn) {
-    advancedBtn.addEventListener('click', () => {
-        advancedModal.style.display = 'block';
-    });
-}
-
-if (closeAdvancedBtn) {
-    closeAdvancedBtn.addEventListener('click', () => {
-        advancedModal.style.display = 'none';
-    });
-}
-
-if (closeAdvancedFooterBtn) {
-    closeAdvancedFooterBtn.addEventListener('click', () => {
-        advancedModal.style.display = 'none';
-    });
-}
-
-window.addEventListener('click', (e) => {
-    if (e.target === advancedModal) {
-        advancedModal.style.display = 'none';
-    }
-});
-
-// 高级设置输入监听
+// 高级设置输入监听（已整合到进阶定义中，不再需要模态框）
 if (creatorInput) {
     creatorInput.addEventListener('input', (e) => {
         characterData.creator = e.target.value;
@@ -1383,11 +1351,7 @@ if (tagsInput) {
     });
 }
 
-if (alternateGreetingsInput) {
-    alternateGreetingsInput.addEventListener('input', (e) => {
-        characterData.alternate_greetings = e.target.value.split('---').map(greeting => greeting.trim()).filter(greeting => greeting);
-    });
-}
+// 备用开场白通过 addAlternateGreeting 等函数管理，不需要单独的 input 监听器
 
 // 浏览器本地存储功能
 const STORAGE_KEY = 'sillytavern_character_drafts';
@@ -1600,7 +1564,6 @@ window.loadDraft = function (index) {
         if (postHistoryInput) postHistoryInput.value = characterData.post_history_instructions;
         if (characterVersionInput) characterVersionInput.value = characterData.character_version;
         if (tagsInput) tagsInput.value = characterData.tags.join(', ');
-        if (alternateGreetingsInput) alternateGreetingsInput.value = characterData.alternate_greetings.join('\n---\n');
 
         if (characterData.avatar) {
             avatarPreview.innerHTML = `<img src="${characterData.avatar}" alt="头像预览">`;
@@ -2068,3 +2031,5 @@ console.log('你可以在控制台輸入以下命令測試：');
 console.log('  characterData - 查看角色數據');
 console.log('  exportBtn - 查看導出按鈕元素');
 console.log('  exportBtn.click() - 手動觸發點擊');
+
+// 折叠/展开功能已移至 character-editor.html 的内联 script 中
