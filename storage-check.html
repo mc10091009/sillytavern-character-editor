@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>localStorage 檢查工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .test-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .test-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        
+        .result {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        
+        .success {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            color: #155724;
+        }
+        
+        .error {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+            color: #721c24;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            color: #856404;
+        }
+        
+        .info {
+            background: #d1ecf1;
+            border: 2px solid #17a2b8;
+            color: #0c5460;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin: 5px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .version {
+            text-align: center;
+            color: #999;
+            font-size: 12px;
+            margin-top: 20px;
+        }
+        
+        .code {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">🔍</div>
+        <h1>localStorage 檢查工具</h1>
+        <p class="subtitle">診斷瀏覽器存儲功能是否正常</p>
+        
+        <div class="test-section">
+            <div class="test-title">📋 環境信息</div>
+            <div id="envInfo" class="result info">檢查中...</div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">✅ localStorage 可用性測試</div>
+            <div id="storageTest" class="result info">檢查中...</div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">💾 讀寫測試</div>
+            <button onclick="testWrite()">測試寫入</button>
+            <button onclick="testRead()">測試讀取</button>
+            <button onclick="clearTest()">清除測試數據</button>
+            <div id="rwTest" class="result info" style="display:none;">等待測試...</div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">📊 當前存儲內容</div>
+            <button onclick="showStorage()">查看所有數據</button>
+            <div id="storageContent" class="result info" style="display:none;">點擊按鈕查看...</div>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">🔧 腳本版本檢查</div>
+            <div id="scriptVersion" class="result info">檢查中...</div>
+        </div>
+        
+        <div class="version">
+            檢查工具版本 v1.0 | 最後更新: <span id="timestamp"></span>
+        </div>
+    </div>
+
+    <script>
+        // 顯示當前時間戳
+        document.getElementById('timestamp').textContent = new Date().toLocaleString('zh-CN');
+        
+        // 環境信息
+        function checkEnvironment() {
+            const info = {
+                'URL': window.location.href,
+                '協議': window.location.protocol,
+                '主機': window.location.host,
+                '瀏覽器': navigator.userAgent.split(' ').slice(-2).join(' '),
+                'Cookie 啟用': navigator.cookieEnabled ? '✓ 是' : '✗ 否',
+                '在線狀態': navigator.onLine ? '✓ 在線' : '✗ 離線'
+            };
+            
+            let html = '';
+            for (const [key, value] of Object.entries(info)) {
+                html += `<strong>${key}:</strong> ${value}<br>`;
+            }
+            
+            document.getElementById('envInfo').innerHTML = html;
+        }
+        
+        // localStorage 可用性測試
+        function checkLocalStorage() {
+            const resultDiv = document.getElementById('storageTest');
+            
+            try {
+                // 測試是否可用
+                const test = '__storage_test__';
+                localStorage.setItem(test, test);
+                localStorage.removeItem(test);
+                
+                // 獲取容量信息
+                let usageInfo = '';
+                if (navigator.storage && navigator.storage.estimate) {
+                    navigator.storage.estimate().then(estimate => {
+                        const used = (estimate.usage / 1024 / 1024).toFixed(2);
+                        const total = (estimate.quota / 1024 / 1024).toFixed(2);
+                        const percent = ((estimate.usage / estimate.quota) * 100).toFixed(1);
+                        
+                        usageInfo = `<br><strong>已使用:</strong> ${used} MB<br>` +
+                                   `<strong>總容量:</strong> ${total} MB<br>` +
+                                   `<strong>使用率:</strong> ${percent}%`;
+                        
+                        resultDiv.className = 'result success';
+                        resultDiv.innerHTML = `✓ localStorage 可用！${usageInfo}`;
+                    });
+                } else {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = '✓ localStorage 可用！<br>（無法獲取容量信息）';
+                }
+            } catch (e) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `✗ localStorage 不可用！<br><br>` +
+                                     `<strong>錯誤:</strong> ${e.message}<br><br>` +
+                                     `<strong>可能原因:</strong><br>` +
+                                     `• 瀏覽器隱私模式/無痕模式<br>` +
+                                     `• 瀏覽器設置禁用了存儲<br>` +
+                                     `• 存儲空間已滿<br>` +
+                                     `• 瀏覽器不支持 localStorage`;
+            }
+        }
+        
+        // 測試寫入
+        function testWrite() {
+            const resultDiv = document.getElementById('rwTest');
+            resultDiv.style.display = 'block';
+            
+            try {
+                const testData = {
+                    name: '測試角色',
+                    timestamp: new Date().toISOString(),
+                    random: Math.random()
+                };
+                
+                localStorage.setItem('test_character', JSON.stringify(testData));
+                
+                resultDiv.className = 'result success';
+                resultDiv.innerHTML = `✓ 寫入成功！<br><br>` +
+                                     `<strong>寫入的數據:</strong><br>` +
+                                     `<div class="code">${JSON.stringify(testData, null, 2)}</div>`;
+            } catch (e) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `✗ 寫入失敗！<br><br><strong>錯誤:</strong> ${e.message}`;
+            }
+        }
+        
+        // 測試讀取
+        function testRead() {
+            const resultDiv = document.getElementById('rwTest');
+            resultDiv.style.display = 'block';
+            
+            try {
+                const data = localStorage.getItem('test_character');
+                
+                if (data) {
+                    const parsed = JSON.parse(data);
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `✓ 讀取成功！<br><br>` +
+                                         `<strong>讀取的數據:</strong><br>` +
+                                         `<div class="code">${JSON.stringify(parsed, null, 2)}</div>`;
+                } else {
+                    resultDiv.className = 'result warning';
+                    resultDiv.innerHTML = `⚠ 沒有找到測試數據<br><br>請先點擊「測試寫入」按鈕`;
+                }
+            } catch (e) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `✗ 讀取失敗！<br><br><strong>錯誤:</strong> ${e.message}`;
+            }
+        }
+        
+        // 清除測試數據
+        function clearTest() {
+            try {
+                localStorage.removeItem('test_character');
+                const resultDiv = document.getElementById('rwTest');
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result success';
+                resultDiv.innerHTML = '✓ 測試數據已清除';
+            } catch (e) {
+                alert('清除失敗: ' + e.message);
+            }
+        }
+        
+        // 查看所有存儲內容
+        function showStorage() {
+            const resultDiv = document.getElementById('storageContent');
+            resultDiv.style.display = 'block';
+            
+            try {
+                if (localStorage.length === 0) {
+                    resultDiv.className = 'result info';
+                    resultDiv.innerHTML = 'localStorage 是空的';
+                    return;
+                }
+                
+                let html = `<strong>共有 ${localStorage.length} 個項目:</strong><br><br>`;
+                
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    const value = localStorage.getItem(key);
+                    const size = new Blob([value]).size;
+                    
+                    html += `<strong>${i + 1}. ${key}</strong><br>`;
+                    html += `大小: ${(size / 1024).toFixed(2)} KB<br>`;
+                    
+                    // 嘗試解析 JSON
+                    try {
+                        const parsed = JSON.parse(value);
+                        if (parsed.name) {
+                            html += `角色名稱: ${parsed.name}<br>`;
+                        }
+                        if (parsed.savedAt) {
+                            html += `保存時間: ${new Date(parsed.savedAt).toLocaleString()}<br>`;
+                        }
+                    } catch (e) {
+                        html += `內容預覽: ${value.substring(0, 50)}...<br>`;
+                    }
+                    
+                    html += '<br>';
+                }
+                
+                resultDiv.className = 'result info';
+                resultDiv.innerHTML = html;
+            } catch (e) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `✗ 讀取失敗！<br><br><strong>錯誤:</strong> ${e.message}`;
+            }
+        }
+        
+        // 檢查腳本版本
+        function checkScriptVersion() {
+            const resultDiv = document.getElementById('scriptVersion');
+            
+            // 檢查 script.js 是否已加載
+            fetch('script.js', { method: 'HEAD' })
+                .then(response => {
+                    const lastModified = response.headers.get('Last-Modified');
+                    const etag = response.headers.get('ETag');
+                    
+                    let html = '<strong>script.js 狀態:</strong><br>';
+                    html += `HTTP 狀態: ${response.status} ${response.statusText}<br>`;
+                    if (lastModified) {
+                        html += `最後修改: ${new Date(lastModified).toLocaleString()}<br>`;
+                    }
+                    if (etag) {
+                        html += `ETag: ${etag}<br>`;
+                    }
+                    html += `<br><strong>建議:</strong> 如果看到舊的修改時間，請按 Ctrl+Shift+R 強制刷新`;
+                    
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = html;
+                })
+                .catch(e => {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `✗ 無法檢查 script.js<br><br><strong>錯誤:</strong> ${e.message}`;
+                });
+        }
+        
+        // 頁面加載時執行檢查
+        window.addEventListener('load', () => {
+            checkEnvironment();
+            checkLocalStorage();
+            checkScriptVersion();
+        });
+    </script>
+</body>
+</html>
