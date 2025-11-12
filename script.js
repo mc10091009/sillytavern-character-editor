@@ -226,235 +226,243 @@ avatarInput.addEventListener('change', (e) => {
 
 // 导出为 PNG (SillyTavern 格式)
 console.log('=== 添加 exportBtn 事件監聽器 ===');
-exportBtn.addEventListener('click', async () => {
-    console.log('✓ exportBtn 被點擊！');
-    if (!characterData.name) {
-        alert('请至少填写角色名称！');
-        return;
-    }
+if (exportBtn) {
+    exportBtn.addEventListener('click', async () => {
+        console.log('✓ exportBtn 被點擊！');
+        if (!characterData.name) {
+            alert('请至少填写角色名称！');
+            return;
+        }
 
-    // 准备世界书数据
-    let characterBook = null;
-    if (characterData.character_book.entries.length > 0) {
-        characterBook = {
-            name: characterData.name + ' Lorebook',
-            description: '',
-            scan_depth: 100,
-            token_budget: 2048,
-            recursive_scanning: false,
-            extensions: {},
-            entries: characterData.character_book.entries.map((entry, index) => ({
-                keys: entry.keys,
-                content: entry.content,
+        // 准备世界书数据
+        let characterBook = null;
+        if (characterData.character_book.entries.length > 0) {
+            characterBook = {
+                name: characterData.name + ' Lorebook',
+                description: '',
+                scan_depth: 100,
+                token_budget: 2048,
+                recursive_scanning: false,
                 extensions: {},
-                enabled: entry.enabled,
-                insertion_order: entry.insertion_order,
-                case_sensitive: entry.case_sensitive || false,
-                name: entry.comment || `Entry ${index + 1}`,
-                priority: entry.priority || 10,
-                id: entry.id,
-                comment: entry.comment || '',
-                selective: true,
-                secondary_keys: [],
-                constant: false,
-                position: 'before_char'
-            }))
-        };
-    }
+                entries: characterData.character_book.entries.map((entry, index) => ({
+                    keys: entry.keys,
+                    content: entry.content,
+                    extensions: {},
+                    enabled: entry.enabled,
+                    insertion_order: entry.insertion_order,
+                    case_sensitive: entry.case_sensitive || false,
+                    name: entry.comment || `Entry ${index + 1}`,
+                    priority: entry.priority || 10,
+                    id: entry.id,
+                    comment: entry.comment || '',
+                    selective: true,
+                    secondary_keys: [],
+                    constant: false,
+                    position: 'before_char'
+                }))
+            };
+        }
 
-    // 打印导出前的数据
-    console.log('=== 准备导出角色卡 ===');
-    console.log('角色名称:', characterData.name);
-    console.log('第一条消息 (first_mes):', characterData.first_mes ? '已设置 (' + characterData.first_mes.length + ' 字符)' : '未设置 ⚠️');
-    console.log('备用开场白数量:', characterData.alternate_greetings?.length || 0);
-    console.log('世界书条目:', characterData.character_book?.entries?.length || 0);
+        // 打印导出前的数据
+        console.log('=== 准备导出角色卡 ===');
+        console.log('角色名称:', characterData.name);
+        console.log('第一条消息 (first_mes):', characterData.first_mes ? '已设置 (' + characterData.first_mes.length + ' 字符)' : '未设置 ⚠️');
+        console.log('备用开场白数量:', characterData.alternate_greetings?.length || 0);
+        console.log('世界书条目:', characterData.character_book?.entries?.length || 0);
 
-    // 创建 SillyTavern V2 格式的角色卡数据
-    const characterCard = {
-        spec: 'chara_card_v2',
-        spec_version: '2.0',
-        data: {
-            name: characterData.name,
-            description: characterData.description,
-            personality: characterData.personality,
-            scenario: characterData.scenario,
-            first_mes: characterData.first_mes || '',
-            mes_example: characterData.mes_example,
-            creator_notes: characterData.creator_notes || '',
-            system_prompt: characterData.system_prompt || '',
-            post_history_instructions: characterData.post_history_instructions || '',
-            alternate_greetings: characterData.alternate_greetings || [],
-            character_book: characterBook,
-            tags: characterData.tags || [],
-            creator: characterData.creator || '',
-            character_version: characterData.character_version || '',
-            extensions: {
-                talkativeness: '0.5',
-                fav: false,
-                world: '',
-                depth_prompt: {
-                    prompt: '',
-                    depth: 4
-                },
-                regex_scripts: characterData.extensions?.regex_scripts || [],
-                TavernHelper_scripts: characterData.extensions?.TavernHelper_scripts || []
+        // 创建 SillyTavern V2 格式的角色卡数据
+        const characterCard = {
+            spec: 'chara_card_v2',
+            spec_version: '2.0',
+            data: {
+                name: characterData.name,
+                description: characterData.description,
+                personality: characterData.personality,
+                scenario: characterData.scenario,
+                first_mes: characterData.first_mes || '',
+                mes_example: characterData.mes_example,
+                creator_notes: characterData.creator_notes || '',
+                system_prompt: characterData.system_prompt || '',
+                post_history_instructions: characterData.post_history_instructions || '',
+                alternate_greetings: characterData.alternate_greetings || [],
+                character_book: characterBook,
+                tags: characterData.tags || [],
+                creator: characterData.creator || '',
+                character_version: characterData.character_version || '',
+                extensions: {
+                    talkativeness: '0.5',
+                    fav: false,
+                    world: '',
+                    depth_prompt: {
+                        prompt: '',
+                        depth: 4
+                    },
+                    regex_scripts: characterData.extensions?.regex_scripts || [],
+                    TavernHelper_scripts: characterData.extensions?.TavernHelper_scripts || []
+                }
             }
+        };
+
+        // 验证导出的数据
+        console.log('导出的 first_mes:', characterCard.data.first_mes ? '✓ 已包含' : '✗ 缺失');
+        console.log('导出的 alternate_greetings:', characterCard.data.alternate_greetings.length, '个');
+
+        try {
+            // 使用头像或创建默认图片
+            let imageData;
+            if (characterData.avatar) {
+                imageData = characterData.avatar;
+            } else {
+                // 创建默认头像
+                const canvas = document.createElement('canvas');
+                canvas.width = 400;
+                canvas.height = 600;
+                const ctx = canvas.getContext('2d');
+
+                // 渐变背景
+                const gradient = ctx.createLinearGradient(0, 0, 400, 600);
+                gradient.addColorStop(0, '#667eea');
+                gradient.addColorStop(1, '#764ba2');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, 400, 600);
+
+                // 文字
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 48px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(characterData.name, 200, 300);
+
+                imageData = canvas.toDataURL('image/png');
+            }
+
+            // 将 JSON 数据嵌入到 PNG 的 tEXt chunk
+            const base64Data = imageData.split(',')[1];
+            const binaryData = atob(base64Data);
+            const uint8Array = new Uint8Array(binaryData.length);
+            for (let i = 0; i < binaryData.length; i++) {
+                uint8Array[i] = binaryData.charCodeAt(i);
+            }
+
+            // 创建带有 chara 数据的 PNG
+            const pngWithMetadata = await embedCharaData(uint8Array, characterCard);
+
+            // 下载文件
+            const blob = new Blob([pngWithMetadata], { type: 'image/png' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${characterData.name}.png`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            console.log('✓ PNG 角色卡导出成功');
+            alert('✓ PNG 角色卡导出成功！');
+        } catch (error) {
+            console.error('导出失败:', error);
+            alert('导出失败: ' + error.message);
         }
-    };
-
-    // 验证导出的数据
-    console.log('导出的 first_mes:', characterCard.data.first_mes ? '✓ 已包含' : '✗ 缺失');
-    console.log('导出的 alternate_greetings:', characterCard.data.alternate_greetings.length, '个');
-
-    try {
-        // 使用头像或创建默认图片
-        let imageData;
-        if (characterData.avatar) {
-            imageData = characterData.avatar;
-        } else {
-            // 创建默认头像
-            const canvas = document.createElement('canvas');
-            canvas.width = 400;
-            canvas.height = 600;
-            const ctx = canvas.getContext('2d');
-
-            // 渐变背景
-            const gradient = ctx.createLinearGradient(0, 0, 400, 600);
-            gradient.addColorStop(0, '#667eea');
-            gradient.addColorStop(1, '#764ba2');
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, 400, 600);
-
-            // 文字
-            ctx.fillStyle = 'white';
-            ctx.font = 'bold 48px Arial';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(characterData.name, 200, 300);
-
-            imageData = canvas.toDataURL('image/png');
-        }
-
-        // 将 JSON 数据嵌入到 PNG 的 tEXt chunk
-        const base64Data = imageData.split(',')[1];
-        const binaryData = atob(base64Data);
-        const uint8Array = new Uint8Array(binaryData.length);
-        for (let i = 0; i < binaryData.length; i++) {
-            uint8Array[i] = binaryData.charCodeAt(i);
-        }
-
-        // 创建带有 chara 数据的 PNG
-        const pngWithMetadata = await embedCharaData(uint8Array, characterCard);
-
-        // 下载文件
-        const blob = new Blob([pngWithMetadata], { type: 'image/png' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${characterData.name}.png`;
-        a.click();
-        URL.revokeObjectURL(url);
-
-        console.log('✓ PNG 角色卡导出成功');
-        alert('✓ PNG 角色卡导出成功！');
-    } catch (error) {
-        console.error('导出失败:', error);
-        alert('导出失败: ' + error.message);
-    }
-});
+    });
+} else {
+    console.error('✗ exportBtn 元素未找到');
+}
 
 // 导出为 JSON
 console.log('=== 添加 exportJsonBtn 事件監聽器 ===');
-exportJsonBtn.addEventListener('click', () => {
-    console.log('✓ exportJsonBtn 被點擊！');
-    if (!characterData.name) {
-        alert('请至少填写角色名称！');
-        return;
-    }
-
-    console.log('=== 准备导出 JSON 角色卡 ===');
-    console.log('first_mes:', characterData.first_mes);
-    console.log('first_mes 长度:', characterData.first_mes?.length || 0);
-
-    // 准备世界书数据
-    let characterBook = null;
-    if (characterData.character_book.entries.length > 0) {
-        characterBook = {
-            name: characterData.name + ' Lorebook',
-            description: '',
-            scan_depth: 100,
-            token_budget: 2048,
-            recursive_scanning: false,
-            extensions: {},
-            entries: characterData.character_book.entries.map((entry, index) => ({
-                keys: entry.keys,
-                content: entry.content,
-                extensions: {},
-                enabled: entry.enabled,
-                insertion_order: entry.insertion_order,
-                case_sensitive: entry.case_sensitive || false,
-                name: entry.comment || `Entry ${index + 1}`,
-                priority: entry.priority || 10,
-                id: entry.id,
-                comment: entry.comment || '',
-                selective: true,
-                secondary_keys: entry.secondary_keys || [],
-                constant: false,
-                position: 'before_char',
-                use_regex: entry.use_regex || false
-            }))
-        };
-    }
-
-    // 创建角色卡数据
-    const characterCard = {
-        spec: 'chara_card_v2',
-        spec_version: '2.0',
-        data: {
-            name: characterData.name,
-            description: characterData.description,
-            personality: characterData.personality,
-            scenario: characterData.scenario,
-            first_mes: characterData.first_mes || '',
-            mes_example: characterData.mes_example,
-            creator_notes: characterData.creator_notes || '',
-            system_prompt: characterData.system_prompt || '',
-            post_history_instructions: characterData.post_history_instructions || '',
-            alternate_greetings: characterData.alternate_greetings || [],
-            character_book: characterBook,
-            tags: characterData.tags || [],
-            creator: characterData.creator || '',
-            character_version: characterData.character_version || '',
-            extensions: {
-                talkativeness: '0.5',
-                fav: false,
-                world: '',
-                depth_prompt: {
-                    prompt: '',
-                    depth: 4
-                },
-                regex_scripts: characterData.extensions?.regex_scripts || [],
-                TavernHelper_scripts: characterData.extensions?.TavernHelper_scripts || []
-            }
+if (exportJsonBtn) {
+    exportJsonBtn.addEventListener('click', () => {
+        console.log('✓ exportJsonBtn 被點擊！');
+        if (!characterData.name) {
+            alert('请至少填写角色名称！');
+            return;
         }
-    };
 
-    console.log('JSON 中的 first_mes:', characterCard.data.first_mes);
-    console.log('JSON 中的 alternate_greetings:', characterCard.data.alternate_greetings);
+        console.log('=== 准备导出 JSON 角色卡 ===');
+        console.log('first_mes:', characterData.first_mes);
+        console.log('first_mes 长度:', characterData.first_mes?.length || 0);
 
-    // 下载 JSON 文件
-    const jsonString = JSON.stringify(characterCard, null, 2);
-    const blob = new Blob([jsonString], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${characterData.name}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+        // 准备世界书数据
+        let characterBook = null;
+        if (characterData.character_book.entries.length > 0) {
+            characterBook = {
+                name: characterData.name + ' Lorebook',
+                description: '',
+                scan_depth: 100,
+                token_budget: 2048,
+                recursive_scanning: false,
+                extensions: {},
+                entries: characterData.character_book.entries.map((entry, index) => ({
+                    keys: entry.keys,
+                    content: entry.content,
+                    extensions: {},
+                    enabled: entry.enabled,
+                    insertion_order: entry.insertion_order,
+                    case_sensitive: entry.case_sensitive || false,
+                    name: entry.comment || `Entry ${index + 1}`,
+                    priority: entry.priority || 10,
+                    id: entry.id,
+                    comment: entry.comment || '',
+                    selective: true,
+                    secondary_keys: entry.secondary_keys || [],
+                    constant: false,
+                    position: 'before_char',
+                    use_regex: entry.use_regex || false
+                }))
+            };
+        }
 
-    console.log('✓ JSON 角色卡导出成功');
-    alert('✓ JSON 角色卡导出成功！\n\n可以用文本编辑器打开查看内容。');
-});
+        // 创建角色卡数据
+        const characterCard = {
+            spec: 'chara_card_v2',
+            spec_version: '2.0',
+            data: {
+                name: characterData.name,
+                description: characterData.description,
+                personality: characterData.personality,
+                scenario: characterData.scenario,
+                first_mes: characterData.first_mes || '',
+                mes_example: characterData.mes_example,
+                creator_notes: characterData.creator_notes || '',
+                system_prompt: characterData.system_prompt || '',
+                post_history_instructions: characterData.post_history_instructions || '',
+                alternate_greetings: characterData.alternate_greetings || [],
+                character_book: characterBook,
+                tags: characterData.tags || [],
+                creator: characterData.creator || '',
+                character_version: characterData.character_version || '',
+                extensions: {
+                    talkativeness: '0.5',
+                    fav: false,
+                    world: '',
+                    depth_prompt: {
+                        prompt: '',
+                        depth: 4
+                    },
+                    regex_scripts: characterData.extensions?.regex_scripts || [],
+                    TavernHelper_scripts: characterData.extensions?.TavernHelper_scripts || []
+                }
+            }
+        };
+
+        console.log('JSON 中的 first_mes:', characterCard.data.first_mes);
+        console.log('JSON 中的 alternate_greetings:', characterCard.data.alternate_greetings);
+
+        // 下载 JSON 文件
+        const jsonString = JSON.stringify(characterCard, null, 2);
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${characterData.name}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+
+        console.log('✓ JSON 角色卡导出成功');
+        alert('✓ JSON 角色卡导出成功！\n\n可以用文本编辑器打开查看内容。');
+    });
+} else {
+    console.error('✗ exportJsonBtn 元素未找到');
+}
 
 // 将角色数据嵌入 PNG
 async function embedCharaData(pngData, characterCard) {
@@ -536,9 +544,13 @@ function calculateCRC(data) {
 }
 
 // 导入角色卡
-importBtn.addEventListener('click', () => {
-    importFile.click();
-});
+if (importBtn) {
+    importBtn.addEventListener('click', () => {
+        importFile.click();
+    });
+} else {
+    console.error('✗ importBtn 元素未找到');
+}
 
 importFile.addEventListener('change', async (e) => {
     const file = e.target.files[0];
@@ -1096,8 +1108,9 @@ function decodeUTF8(bytes) {
 }
 
 // 清空表单
-clearBtn.addEventListener('click', () => {
-    if (confirm('确定要清空所有内容吗？')) {
+if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+        if (confirm('确定要清空所有内容吗？')) {
         characterData = {
             name: '',
             description: '',
@@ -1142,13 +1155,20 @@ clearBtn.addEventListener('click', () => {
 
         updatePreview();
     }
-});
+    });
+} else {
+    console.error('✗ clearBtn 元素未找到');
+}
 
 // 世界书功能
-worldBookBtn.addEventListener('click', () => {
-    worldBookModal.style.display = 'block';
-    renderEntries();
-});
+if (worldBookBtn && worldBookModal) {
+    worldBookBtn.addEventListener('click', () => {
+        worldBookModal.style.display = 'block';
+        renderEntries();
+    });
+} else {
+    console.error('✗ worldBookBtn 或 worldBookModal 元素未找到');
+}
 
 closeModalBtn.addEventListener('click', () => {
     worldBookModal.style.display = 'none';
@@ -1650,7 +1670,7 @@ function renderEntries() {
             }
         }
     });
-
+}
 
 // 聚焦关键词输入框
 window.focusKeywordInput = function(entryId) {
@@ -1889,31 +1909,43 @@ function saveDraftToList(draft) {
 }
 
 // 保存按钮
-saveLocalBtn.addEventListener('click', () => {
-    if (!characterData.name) {
-        alert('请至少填写角色名称！');
-        return;
-    }
+if (saveLocalBtn) {
+    console.log('✓ 正在綁定 saveLocalBtn 事件監聽器');
+    saveLocalBtn.addEventListener('click', () => {
+        console.log('saveLocalBtn 被點擊了！');
+        if (!characterData.name) {
+            alert('请至少填写角色名称！');
+            return;
+        }
 
-    const confirmed = confirm(`确定要保存角色 "${characterData.name}" 到浏览器吗？\n\n这将覆盖同名的旧保存。`);
-    if (confirmed) {
-        saveDraftToList(characterData);
-        alert(`✓ 角色 "${characterData.name}" 已保存到浏览器！\n\n数据会一直保存，直到你清除浏览器数据。`);
-    }
-});
+        const confirmed = confirm(`确定要保存角色 "${characterData.name}" 到浏览器吗？\n\n这将覆盖同名的旧保存。`);
+        if (confirmed) {
+            saveDraftToList(characterData);
+            alert(`✓ 角色 "${characterData.name}" 已保存到浏览器！\n\n数据会一直保存，直到你清除浏览器数据。`);
+        }
+    });
+} else {
+    console.error('✗ saveLocalBtn 元素未找到，無法綁定事件');
+}
 
 // 加载按钮
-loadLocalBtn.addEventListener('click', () => {
-    const drafts = getAllDrafts();
+if (loadLocalBtn) {
+    console.log('✓ 正在綁定 loadLocalBtn 事件監聽器');
+    loadLocalBtn.addEventListener('click', () => {
+        console.log('loadLocalBtn 被點擊了！');
+        const drafts = getAllDrafts();
 
-    if (drafts.length === 0) {
-        alert('浏览器中没有保存的角色卡。\n\n你可以先创建角色卡，然后点击"保存到浏览器"按钮。');
-        return;
-    }
+        if (drafts.length === 0) {
+            alert('浏览器中没有保存的角色卡。\n\n你可以先创建角色卡，然后点击"保存到浏览器"按钮。');
+            return;
+        }
 
-    // 创建选择对话框
-    showLoadDialog(drafts);
-});
+        // 创建选择对话框
+        showLoadDialog(drafts);
+    });
+} else {
+    console.error('✗ loadLocalBtn 元素未找到，無法綁定事件');
+}
 
 // 显示加载对话框
 function showLoadDialog(drafts) {
@@ -2301,27 +2333,27 @@ if (regexScriptsBtn && regexScriptsModal) {
 // 添加新脚本
 if (addRegexScriptBtn) {
     addRegexScriptBtn.addEventListener('click', () => {
-    const newScript = {
-        id: crypto.randomUUID(),
-        scriptName: '新脚本',
-        disabled: false,
-        runOnEdit: true,
-        findRegex: '',
-        replaceString: '',
-        trimStrings: [],
-        placement: [2],
-        substituteRegex: 0,
-        minDepth: null,
-        maxDepth: null,
-        markdownOnly: false,
-        promptOnly: false
-    };
+        const newScript = {
+            id: crypto.randomUUID(),
+            scriptName: '新脚本',
+            disabled: false,
+            runOnEdit: true,
+            findRegex: '',
+            replaceString: '',
+            trimStrings: [],
+            placement: [2],
+            substituteRegex: 0,
+            minDepth: null,
+            maxDepth: null,
+            markdownOnly: false,
+            promptOnly: false
+        };
 
-    if (!characterData.extensions) characterData.extensions = {};
-    if (!characterData.extensions.regex_scripts) characterData.extensions.regex_scripts = [];
+        if (!characterData.extensions) characterData.extensions = {};
+        if (!characterData.extensions.regex_scripts) characterData.extensions.regex_scripts = [];
 
-    characterData.extensions.regex_scripts.push(newScript);
-    renderRegexScripts();
+        characterData.extensions.regex_scripts.push(newScript);
+        renderRegexScripts();
     });
 }
 
@@ -2536,4 +2568,3 @@ console.log('  exportBtn - 查看導出按鈕元素');
 console.log('  exportBtn.click() - 手動觸發點擊');
 
 // 折叠/展开功能已移至 character-editor.html 的内联 script 中
-}
